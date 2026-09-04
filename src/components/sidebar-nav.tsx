@@ -14,16 +14,33 @@ const ITEMS = [
 
 export function SidebarNav({ unread }: { unread: number }) {
   const pathname = usePathname();
+
   return (
-    <nav className="grid gap-1">
+    <nav className="flex gap-1 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">
       {ITEMS.map((it) => {
-        const active = it.href === "/app" ? pathname === "/app" : pathname.startsWith(it.href);
+        const active =
+          it.href === "/app"
+            ? pathname === "/app"
+            : pathname.startsWith(it.href);
+
         return (
-          <Link key={it.href} href={it.href} className="atlas-nav-link" data-active={active}>
+          <Link
+            key={it.href}
+            href={it.href}
+            className="atlas-nav-link shrink-0 whitespace-nowrap"
+            data-active={active}
+          >
             <span className="atlas-nav-dot" />
-            <span className="flex-1">{it.label}</span>
+            <span>{it.label}</span>
+
             {it.href === "/app/bandeja" && unread > 0 ? (
-              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: "var(--atlas-primary)", color: "var(--atlas-on-primary)" }}>
+              <span
+                className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                style={{
+                  background: "var(--atlas-primary)",
+                  color: "var(--atlas-on-primary)",
+                }}
+              >
                 {unread}
               </span>
             ) : null}
