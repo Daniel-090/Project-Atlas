@@ -63,30 +63,30 @@ export default async function BandejaPage({ searchParams }: { searchParams: Prom
         </section>
       ) : null}
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1 sm:mb-4 sm:flex-wrap sm:items-center sm:overflow-visible sm:pb-0">
         {FILTERS.map((f) => (
-          <Link key={f.key} href={f.key === "todas" ? "/app/bandeja" : `/app/bandeja?filtro=${f.key}`} className={`atlas-chip !py-1.5 ${filtro === f.key ? "atlas-chip-primary" : ""}`}>
+          <Link key={f.key} href={f.key === "todas" ? "/app/bandeja" : `/app/bandeja?filtro=${f.key}`} className={`atlas-chip shrink-0 !py-2 ${filtro === f.key ? "atlas-chip-primary" : ""}`}>
             {f.label}
           </Link>
         ))}
         {!company.imapHost ? (
-          <Link href="/app/configuracion#correo" className="ml-auto text-xs font-semibold text-primary hover:underline">
+          <Link href="/app/configuracion#correo" className="shrink-0 text-xs font-semibold text-primary hover:underline">
             Conectar correo →
           </Link>
         ) : (
-          <span className="ml-auto text-xs text-muted">Correo: {company.imapLastError ? "error de sincronización" : `sincronizado ${company.imapLastSync ? formatDate(company.imapLastSync) : "pendiente"}`}</span>
+          <span className="shrink-0 text-xs text-muted sm:ml-auto">Correo: {company.imapLastError ? "error de sincronización" : `sincronizado ${company.imapLastSync ? formatDate(company.imapLastSync) : "pendiente"}`}</span>
         )}
       </div>
 
       <section className="atlas-card overflow-hidden">
         {list.length === 0 ? (
-          <div className="p-6">
+          <div className="p-5 sm:p-6">
             <div className="atlas-empty">No hay mensajes en este filtro. Conecta tu correo IMAP en Configuración o registra una conversación.</div>
           </div>
         ) : (
           <ul className="divide-y divide-border">
             {list.map(({ m, communityName }) => (
-              <li key={m.id} className="px-6 py-4">
+              <li key={m.id} className="px-5 py-4 sm:px-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <ChannelChip channel={m.channel} />
                   {m.direction === "out" ? <span className="atlas-chip">Enviado</span> : null}
@@ -96,9 +96,9 @@ export default async function BandejaPage({ searchParams }: { searchParams: Prom
                     </span>
                   ))}
                   {communityName ? <span className="atlas-chip">{communityName}</span> : null}
-                  <span className="ml-auto text-xs text-muted">{formatDate(m.createdAt)}</span>
+                  <span className="shrink-0 text-xs text-muted sm:ml-auto">{formatDate(m.createdAt)}</span>
                 </div>
-                <div className="mt-2 flex items-start gap-3">
+                <div className="mt-3 flex items-start gap-3">
                   <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full" style={{ background: m.isRead ? "transparent" : "var(--atlas-primary)" }} />
                   <div className="min-w-0 flex-1">
                     <p className={`text-sm ${m.isRead ? "font-medium text-foreground" : "font-semibold text-foreground"}`}>{m.subject}</p>
@@ -108,7 +108,7 @@ export default async function BandejaPage({ searchParams }: { searchParams: Prom
                   <form action={toggleRead}>
                     <input type="hidden" name="id" value={m.id} />
                     <input type="hidden" name="read" value={m.isRead ? "0" : "1"} />
-                    <button className="atlas-btn-ghost whitespace-nowrap text-xs font-semibold">{m.isRead ? "Marcar no leído" : "Marcar leído"}</button>
+                    <button className="atlas-btn-ghost shrink-0 whitespace-nowrap text-xs font-semibold">{m.isRead ? "Marcar no leído" : "Marcar leído"}</button>
                   </form>
                 </div>
               </li>

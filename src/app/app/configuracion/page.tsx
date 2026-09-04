@@ -15,9 +15,9 @@ export default async function ConfiguracionPage() {
     <>
       <PageHeader eyebrow="Configuración" title="Tu gestoría" subtitle="Identidad visual, contactos, correo y códigos. Todo se guarda en Atlas y se aplica a tu panel y al portal de tus vecinos." />
 
-      <div className="grid gap-6">
+      <div className="grid gap-5 sm:gap-6">
         <Section id="identidad" eyebrow="Identidad" title="Personalización" description="Los colores se aplican solo dentro de tu panel y del portal de tus vecinos. La portada de Atlas mantiene su identidad propia.">
-          <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+          <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <CustomizationForm
               initial={{
                 companyName: company.name,
@@ -54,19 +54,19 @@ export default async function ConfiguracionPage() {
         </Section>
 
         <Section id="whatsapp" eyebrow="WhatsApp" title="Webhook de entrada" description="Conecta tu bridge (Make, Zapier o tu propio servicio) a esta URL. Cada POST crea un mensaje en la Bandeja.">
-          <div className="grid gap-3 text-sm">
+          <div className="grid gap-4 text-sm sm:gap-3">
             <div>
               <span className="atlas-label">URL del webhook</span>
-              <code className="atlas-code block overflow-x-auto whitespace-nowrap !px-3 !py-2">{webhookUrl}</code>
+              <code className="atlas-code block max-w-full overflow-x-auto whitespace-nowrap !px-3 !py-2">{webhookUrl}</code>
             </div>
-            <p className="text-xs text-muted">
+            <p className="break-words text-xs text-muted">
               Cuerpo JSON esperado: <code className="atlas-code">{`{ "from": "+34600000000", "name": "María", "text": "Hola, la luz del portal…", "id": "wamid…" }`}</code>
             </p>
           </div>
         </Section>
 
         <Section id="codigos" eyebrow="Códigos" title="Identificadores" description="El código de gestoría identifica tu cuenta. Los códigos RES- de cada comunidad están en Comunidades.">
-          <dl className="grid gap-4 text-sm sm:grid-cols-3">
+          <dl className="grid gap-4 text-sm sm:grid-cols-3 sm:gap-5">
             <div>
               <dt className="atlas-label">Código de gestoría</dt>
               <dd className="font-mono font-semibold text-primary">{company.code}</dd>
@@ -89,7 +89,7 @@ export default async function ConfiguracionPage() {
 function Section({ id, eyebrow, title, description, children }: { id: string; eyebrow: string; title: string; description: string; children: React.ReactNode }) {
   return (
     <section id={id} className="atlas-card atlas-card-pad scroll-mt-6">
-      <div className="mb-6 border-b border-border pb-5">
+      <div className="mb-5 border-b border-border pb-4 sm:mb-6 sm:pb-5">
         <p className="atlas-eyebrow">{eyebrow}</p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">{title}</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>

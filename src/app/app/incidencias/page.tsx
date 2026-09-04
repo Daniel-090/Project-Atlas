@@ -42,16 +42,16 @@ export default async function IncidenciasPage({ searchParams }: { searchParams: 
       />
 
       {nueva ? (
-        <section className="atlas-card atlas-card-pad mb-6">
+        <section className="atlas-card atlas-card-pad mb-6 sm:mb-7">
           <p className="atlas-eyebrow">Nueva incidencia</p>
           <h2 className="mt-1 mb-5 text-lg font-semibold text-foreground">Registrar en nombre de un vecino</h2>
           {comms.length === 0 ? <div className="atlas-empty">Primero crea una comunidad.</div> : <IncidentForm communities={comms} />}
         </section>
       ) : null}
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1 sm:mb-4 sm:flex-wrap sm:overflow-visible sm:pb-0">
         {FILTERS.map((f) => (
-          <Link key={f.key} href={f.key === "todas" ? "/app/incidencias" : `/app/incidencias?estado=${f.key}`} className={`atlas-chip !py-1.5 ${estado === f.key ? "atlas-chip-primary" : ""}`}>
+          <Link key={f.key} href={f.key === "todas" ? "/app/incidencias" : `/app/incidencias?estado=${f.key}`} className={`atlas-chip shrink-0 !py-2 ${estado === f.key ? "atlas-chip-primary" : ""}`}>
             {f.label}
           </Link>
         ))}
@@ -59,14 +59,14 @@ export default async function IncidenciasPage({ searchParams }: { searchParams: 
 
       <section className="atlas-card overflow-hidden">
         {list.length === 0 ? (
-          <div className="p-6">
+          <div className="p-5 sm:p-6">
             <div className="atlas-empty">No hay incidencias en este filtro.</div>
           </div>
         ) : (
           <ul className="divide-y divide-border">
             {list.map(({ incident, communityName }) => (
               <li key={incident.id}>
-                <Link href={`/app/incidencias/${incident.id}`} className="flex flex-col gap-3 px-6 py-4 transition hover:bg-surface-soft sm:flex-row sm:items-center">
+                <Link href={`/app/incidencias/${incident.id}`} className="flex flex-col gap-3 px-5 py-4 transition hover:bg-surface-soft sm:flex-row sm:items-center sm:px-6">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{incident.title}</p>
                     <p className="mt-0.5 truncate text-xs text-muted">

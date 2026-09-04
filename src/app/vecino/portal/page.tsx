@@ -33,22 +33,22 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
           </Link>
         }
       />
-      {creada ? <p className="atlas-alert mb-6">Incidencia enviada. Tu gestoría la ha recibido y la revisará en breve.</p> : null}
+      {creada ? <p className="atlas-alert mb-5 sm:mb-6">Incidencia enviada. Tu gestoría la ha recibido y la revisará en breve.</p> : null}
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-        <section className="grid gap-6">
+      <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
+        <section className="grid gap-5 sm:gap-6">
           <div className="atlas-card">
-            <div className="border-b border-border px-6 py-4">
+            <div className="border-b border-border px-5 py-4 sm:px-6">
               <h2 className="text-sm font-semibold text-foreground">Mis incidencias</h2>
             </div>
             {mine.length === 0 ? (
-              <div className="p-6">
+              <div className="p-5 sm:p-6">
                 <div className="atlas-empty">Aún no has creado ninguna incidencia.</div>
               </div>
             ) : (
               <ul className="divide-y divide-border">
                 {mine.map((i) => (
-                  <li key={i.id} className="flex items-center gap-4 px-6 py-4">
+                  <li key={i.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{i.title}</p>
                       <p className="mt-0.5 text-xs text-muted">
@@ -63,18 +63,18 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
           </div>
 
           <div className="atlas-card">
-            <div className="border-b border-border px-6 py-4">
+            <div className="border-b border-border px-5 py-4 sm:px-6">
               <h2 className="text-sm font-semibold text-foreground">Documentos y facturas</h2>
               <p className="text-xs text-muted">Comunicados, facturas y avisos de tu comunidad.</p>
             </div>
             {docs.length === 0 ? (
-              <div className="p-6">
+              <div className="p-5 sm:p-6">
                 <div className="atlas-empty">Todavía no hay documentos publicados para tu comunidad.</div>
               </div>
             ) : (
               <ul className="divide-y divide-border">
                 {docs.map((d) => (
-                  <li key={d.id} className="px-6 py-4">
+                  <li key={d.id} className="px-5 py-4 sm:px-6">
                     <div className="flex flex-wrap items-center gap-2">
                       <ChannelChip channel={d.channel} />
                       {d.tags.map((t) => (
@@ -82,10 +82,10 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
                           {t}
                         </span>
                       ))}
-                      <span className="ml-auto text-xs text-muted">{formatDate(d.createdAt)}</span>
+                      <span className="text-xs text-muted sm:ml-auto">{formatDate(d.createdAt)}</span>
                     </div>
-                    <p className="mt-2 text-sm font-medium text-foreground">{d.subject}</p>
-                    {d.body ? <p className="mt-1 line-clamp-3 text-sm text-muted">{d.body}</p> : null}
+                    <p className="mt-2 break-words text-sm font-medium text-foreground">{d.subject}</p>
+                    {d.body ? <p className="mt-1 break-words line-clamp-3 text-sm text-muted">{d.body}</p> : null}
                   </li>
                 ))}
               </ul>
@@ -93,10 +93,10 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
           </div>
         </section>
 
-        <aside className="atlas-card atlas-card-pad h-fit">
+        <aside className="atlas-card atlas-card-pad h-fit lg:sticky lg:top-6">
           <p className="atlas-eyebrow">Tu gestoría</p>
           <h2 className="mt-1 text-lg font-semibold text-foreground">{company.name}</h2>
-          <div className="mt-4 grid gap-2">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             {company.whatsappJson.map((n) => (
               <a key={n} href={wa(n)} target="_blank" rel="noreferrer" className="atlas-btn atlas-btn-secondary justify-start">
                 <span aria-hidden>◉</span> WhatsApp {n}

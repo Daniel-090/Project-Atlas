@@ -5,6 +5,7 @@ import { messages } from "@/db/schema";
 import { requireGestor } from "@/lib/session";
 import { buildThemeVars, themeVarsToStyle } from "@/lib/theme";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { MobileNav } from "@/components/mobile-nav";
 import { logout } from "@/app/actions/auth";
 import { CompanyBadge } from "@/components/company-badge";
 
@@ -41,16 +42,24 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Contenido */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 lg:hidden">
-            <CompanyBadge name={company.name} logoUrl={company.logoUrl} code={company.code} compact />
-            <form action={logout}>
-              <button className="atlas-btn atlas-btn-secondary !py-2 text-xs">Salir</button>
-            </form>
+          <header className="relative flex items-center justify-between gap-3 border-b border-border bg-sidebar px-4 py-3 sm:px-5 sm:py-4 lg:hidden">
+            <CompanyBadge
+              name={company.name}
+              logoUrl={company.logoUrl}
+              code={company.code}
+              compact
+            />
+
+            <div className="flex items-center gap-2">
+              <form action={logout}>
+                <button className="atlas-btn atlas-btn-secondary !py-2 text-xs">
+                  Salir
+                </button>
+              </form>
+              <MobileNav unread={unread} />
+            </div>
           </header>
-          <div className="border-b border-border px-4 py-2 lg:hidden">
-            <SidebarNav unread={unread} />
-          </div>
-          <main className="flex-1 px-5 py-8 sm:px-8 lg:px-10">{children}</main>
+          <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-10">{children}</main>
         </div>
       </div>
     </div>

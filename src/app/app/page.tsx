@@ -48,29 +48,31 @@ export default async function ResumenPage() {
 
       <section className="mt-8 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         <div className="atlas-card">
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex flex-col gap-2 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <h2 className="text-sm font-semibold text-foreground">Incidencias recientes</h2>
             <Link href="/app/incidencias" className="atlas-btn-ghost text-xs font-semibold">
               Ver todas →
             </Link>
           </div>
           {recent.length === 0 ? (
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               <div className="atlas-empty">Todavía no hay incidencias. Cuando un vecino cree una desde su portal, aparecerá aquí.</div>
             </div>
           ) : (
             <ul className="divide-y divide-border">
               {recent.map(({ incident, communityName }) => (
                 <li key={incident.id}>
-                  <Link href={`/app/incidencias/${incident.id}`} className="flex items-center gap-4 px-6 py-4 transition hover:bg-surface-soft">
+                  <Link href={`/app/incidencias/${incident.id}`} className="flex flex-col gap-3 px-5 py-4 transition hover:bg-surface-soft sm:flex-row sm:items-center sm:gap-4 sm:px-6">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{incident.title}</p>
                       <p className="mt-0.5 truncate text-xs text-muted">
                         {incident.reference} · {communityName} · {categoryLabel(incident.category)} · {formatDate(incident.createdAt)}
                       </p>
                     </div>
-                    <PriorityChip priority={incident.priority} />
-                    <StatusChip status={incident.status} />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <PriorityChip priority={incident.priority} />
+                      <StatusChip status={incident.status} />
+                    </div>
                   </Link>
                 </li>
               ))}
@@ -79,14 +81,14 @@ export default async function ResumenPage() {
         </div>
 
         <div className="atlas-card">
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex flex-col gap-2 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <h2 className="text-sm font-semibold text-foreground">Últimas comunicaciones</h2>
             <Link href="/app/bandeja" className="atlas-btn-ghost text-xs font-semibold">
               Abrir bandeja →
             </Link>
           </div>
           {recentMessages.length === 0 ? (
-            <div className="p-6">
+            <div className="p-5 sm:p-6">
               <div className="atlas-empty">Sin mensajes. Conecta tu correo en Configuración o registra una llamada en la Bandeja.</div>
             </div>
           ) : (
