@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   IDENTIDAD ATLAS (marca pública): temas oro.
+   claro = blanco + dorado · oscuro = negro + dorado
+   Estas variables solo aplican en portada/acceso. Dentro de cada gestoría,
+   el layout inyecta sus propias --atlas-* (motor de personalización).
+   ───────────────────────────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --atlas-primary: #d4af37;
+  --atlas-primary-hover: #e3c45c;
+  --atlas-on-primary: #111111;
+  --atlas-secondary: #d4af37;
+  --atlas-on-secondary: #111111;
+  --atlas-background: #000000;
+  --atlas-surface: #161616;
+  --atlas-surface-soft: #1f1f1f;
+  --atlas-sidebar: #0a0a0a;
+  --atlas-text: #f5f1e6;
+  --atlas-text-secondary: #a9a493;
+  --atlas-border: #2a2a2a;
+  --atlas-primary-soft: #2a2410;
+  --atlas-secondary-soft: #2a2410;
+  --atlas-scheme: dark;
+  --atlas-radius: 18px;
+  --atlas-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] {
+  --atlas-primary: #b8912a;
+  --atlas-primary-hover: #a07d22;
+  --atlas-on-primary: #ffffff;
+  --atlas-secondary: #b8912a;
+  --atlas-on-secondary: #ffffff;
+  --atlas-background: #ffffff;
+  --atlas-surface: #ffffff;
+  --atlas-surface-soft: #f7f4ec;
+  --atlas-sidebar: #faf8f2;
+  --atlas-text: #171512;
+  --atlas-text-secondary: #6b6656;
+  --atlas-border: #e7e1d1;
+  --atlas-primary-soft: #f6efdc;
+  --atlas-secondary-soft: #f6efdc;
+  --atlas-scheme: light;
+  --atlas-shadow: 0 24px 60px rgba(23, 21, 18, 0.1);
+}
+
+@theme inline {
+  --color-primary: var(--atlas-primary);
+  --color-primary-hover: var(--atlas-primary-hover);
+  --color-on-primary: var(--atlas-on-primary);
+  --color-secondary: var(--atlas-secondary);
+  --color-on-secondary: var(--atlas-on-secondary);
+  --color-background: var(--atlas-background);
+  --color-surface: var(--atlas-surface);
+  --color-surface-soft: var(--atlas-surface-soft);
+  --color-sidebar: var(--atlas-sidebar);
+  --color-foreground: var(--atlas-text);
+  --color-muted: var(--atlas-text-secondary);
+  --color-border: var(--atlas-border);
+  --color-primary-soft: var(--atlas-primary-soft);
+  --color-secondary-soft: var(--atlas-secondary-soft);
+  --radius-atlas: var(--atlas-radius);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--atlas-background);
+  color: var(--atlas-text);
+  color-scheme: var(--atlas-scheme, dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Componentes base ─────────────────────────────────────────────────────── */
+@layer components {
+  .atlas-card {
+    @apply rounded-[var(--atlas-radius)] border border-border bg-surface;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .atlas-card-pad {
+    @apply p-6 sm:p-7;
+  }
+  .atlas-eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-primary;
+  }
+  .atlas-title {
+    @apply text-2xl font-semibold tracking-tight text-foreground sm:text-3xl;
+  }
+  .atlas-subtitle {
+    @apply mt-1.5 text-sm text-muted;
+  }
+  .atlas-label {
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted;
+  }
+  .atlas-input {
+    @apply w-full rounded-xl border border-border bg-surface-soft px-3.5 py-2.5 text-sm text-foreground outline-none transition;
+  }
+  .atlas-input::placeholder {
+    color: var(--atlas-text-secondary);
+    opacity: 0.7;
+  }
+  .atlas-input:focus {
+    border-color: var(--atlas-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--atlas-primary) 25%, transparent);
+  }
+  .atlas-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .atlas-btn-primary {
+    background: var(--atlas-primary);
+    color: var(--atlas-on-primary);
+  }
+  .atlas-btn-primary:hover {
+    background: var(--atlas-primary-hover);
+  }
+  .atlas-btn-secondary {
+    @apply border border-border bg-surface text-foreground;
+  }
+  .atlas-btn-secondary:hover {
+    background: var(--atlas-surface-soft);
+  }
+  .atlas-btn-ghost {
+    @apply text-primary hover:underline underline-offset-4;
+  }
+  .atlas-btn-outline-primary {
+    @apply border border-primary text-primary;
+  }
+  .atlas-btn-outline-primary:hover {
+    background: var(--atlas-primary-soft);
+  }
+  .atlas-chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-border bg-surface-soft px-2.5 py-0.5 text-[11px] font-medium text-muted;
+  }
+  .atlas-chip-primary {
+    background: var(--atlas-primary-soft);
+    border-color: transparent;
+    color: var(--atlas-text);
+  }
+  .atlas-table {
+    @apply w-full text-left text-sm;
+  }
+  .atlas-table th {
+    @apply border-b border-border px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted;
+  }
+  .atlas-table td {
+    @apply border-b border-border px-4 py-3 align-middle text-foreground;
+  }
+  .atlas-table tr:last-child td {
+    @apply border-b-0;
+  }
+  .atlas-nav-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted transition;
+  }
+  .atlas-nav-link:hover {
+    background: var(--atlas-surface-soft);
+    color: var(--atlas-text);
+  }
+  .atlas-nav-link[data-active="true"] {
+    background: var(--atlas-primary-soft);
+    color: var(--atlas-text);
+  }
+  .atlas-nav-link[data-active="true"] .atlas-nav-dot {
+    background: var(--atlas-primary);
+  }
+  .atlas-nav-dot {
+    @apply h-1.5 w-1.5 rounded-full;
+    background: var(--atlas-border);
+  }
+  .atlas-empty {
+    @apply rounded-2xl border border-dashed border-border px-6 py-10 text-center text-sm text-muted;
+  }
+  .atlas-alert {
+    @apply rounded-xl border px-4 py-3 text-sm;
+    border-color: color-mix(in srgb, var(--atlas-primary) 40%, var(--atlas-border));
+    background: var(--atlas-primary-soft);
+    color: var(--atlas-text);
+  }
+  .atlas-code {
+    @apply rounded-lg border border-border bg-surface-soft px-2 py-0.5 font-mono text-xs text-foreground;
+  }
+}
+
+/* Portada Atlas: fondo negro con halo dorado sutil */
+.atlas-hero-bg {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--atlas-primary) 18%, transparent), transparent 60%),
+    var(--atlas-background);
+}
