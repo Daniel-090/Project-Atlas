@@ -88,7 +88,7 @@ export default async function ConfiguracionPage() {
 
 function Section({ id, eyebrow, title, description, children }: { id: string; eyebrow: string; title: string; description: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="atlas-card atlas-card-pad scroll-mt-6">
+    <section id={id} className="atlas-card atlas-card-pad min-w-0 scroll-mt-6">
       <div className="mb-5 border-b border-border pb-4 sm:mb-6 sm:pb-5">
         <p className="atlas-eyebrow">{eyebrow}</p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">{title}</h2>
