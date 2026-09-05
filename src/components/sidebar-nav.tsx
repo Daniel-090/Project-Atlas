@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUnreadCount } from "@/hooks/use-unread-count";
 
 const ITEMS = [
   { href: "/app", label: "Resumen" },
@@ -12,8 +13,9 @@ const ITEMS = [
   { href: "/app/configuracion", label: "Configuración" },
 ];
 
-export function SidebarNav({ unread }: { unread: number }) {
+export function SidebarNav({ unread: initial }: { unread: number }) {
   const pathname = usePathname();
+  const unread = useUnreadCount(initial);
 
   return (
     <nav className="flex gap-1 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">

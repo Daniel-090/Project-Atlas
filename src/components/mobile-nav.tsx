@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useUnreadCount } from "@/hooks/use-unread-count";
 
 const ITEMS = [
   { href: "/app", label: "Resumen" },
@@ -13,8 +14,9 @@ const ITEMS = [
   { href: "/app/configuracion", label: "Configuración" },
 ];
 
-export function MobileNav({ unread }: { unread: number }) {
+export function MobileNav({ unread: initial }: { unread: number }) {
   const pathname = usePathname();
+  const unread = useUnreadCount(initial);
   const [open, setOpen] = useState(false);
 
   return (
