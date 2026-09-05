@@ -54,8 +54,8 @@ export default async function ConfiguracionPage() {
         </Section>
 
         <Section id="whatsapp" eyebrow="WhatsApp" title="Webhook de entrada" description="Conecta tu bridge (Make, Zapier o tu propio servicio) a esta URL. Cada POST crea un mensaje en la Bandeja.">
-          <div className="grid gap-4 text-sm sm:gap-3">
-            <div>
+          <div className="grid gap-4 text-sm sm:gap-3 min-w-0">
+            <div className="min-w-0">
               <span className="atlas-label">URL del webhook</span>
               <code className="atlas-code block max-w-full overflow-x-auto whitespace-nowrap !px-3 !py-2">{webhookUrl}</code>
             </div>
