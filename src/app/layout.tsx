@@ -5,6 +5,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Atlas · Gestión de comunidades",
   description: "Plataforma para gestorías: comunidades, vecinos, incidencias y comunicaciones en un solo lugar.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Atlas",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
