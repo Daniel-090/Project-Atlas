@@ -24,7 +24,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       className="min-h-screen bg-background text-foreground"
       style={{ ...themeVarsToStyle(vars), colorScheme: vars["--atlas-scheme"] as "light" | "dark" }}
     >
-      <div className="mx-auto flex min-h-screen w-full max-w-[1400px]">
+      <div className="mx-auto flex min-h-screen w-full">
         {/* Sidebar */}
         <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-sidebar px-4 py-6 lg:flex">
           <CompanyBadge name={company.name} logoUrl={company.logoUrl} code={company.code} />
