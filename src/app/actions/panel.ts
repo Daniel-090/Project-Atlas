@@ -173,7 +173,7 @@ export async function saveCustomization(_prev: ActionState, fd: FormData): Promi
       name: str(fd, "companyName") || company.name,
       primaryColor: normalizeHex(str(fd, "primaryColor"), company.primaryColor),
       secondaryColor: normalizeHex(str(fd, "secondaryColor"), company.secondaryColor),
-      backgroundColor: normalizeHex(str(fd, "backgroundColor"), company.backgroundColor),
+      backgroundColor: theme === "dark" ? "#111111" : "#ffffff",
       theme,
       logoUrl: str(fd, "logoUrl") || null,
     })

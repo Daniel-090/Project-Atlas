@@ -59,8 +59,8 @@ export function buildThemeVars(input: ThemeInput): ThemeVars {
   const secondary = normalizeHex(input.secondaryColor, "#1f2937");
   const bgRaw = normalizeHex(input.backgroundColor, input.theme === "dark" ? "#0f1115" : "#f6f7f9");
 
-  // El tema elegido manda; si el fondo es oscuro, la UI es oscura aunque el tema sea "light".
-  const effectiveDark = input.theme === "dark" || atlasLuminance(bgRaw) < 0.2;
+  // El tema elegido manda siempre. El fondo no puede forzar el modo contrario.
+  const effectiveDark = input.theme === "dark";
   const white = "#ffffff";
   const black = "#000000";
 
