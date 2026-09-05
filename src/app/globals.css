@@ -72,6 +72,7 @@ body {
   color: var(--atlas-text);
   color-scheme: var(--atlas-scheme, dark);
   -webkit-font-smoothing: antialiased;
+  touch-action: pan-x pan-y;
 }
 
 /* ─── Componentes base ─────────────────────────────────────────────────────── */
