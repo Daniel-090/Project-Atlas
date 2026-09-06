@@ -133,6 +133,24 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const providers = pgTable("providers", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id")
+    .notNull()
+    .references(() => companies.id, { onDelete: "cascade" }),
+  communityId: integer("community_id")
+    .notNull()
+    .references(() => communities.id, { onDelete: "cascade" }),
+  category: varchar("category", { length: 40 }).notNull(),
+  name: varchar("name", { length: 160 }).notNull(),
+  phone: varchar("phone", { length: 40 }),
+  email: varchar("email", { length: 160 }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type Provider = typeof providers.$inferSelect;
+
 export type Company = typeof companies.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Community = typeof communities.$inferSelect;

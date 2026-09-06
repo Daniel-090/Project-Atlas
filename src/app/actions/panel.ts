@@ -8,6 +8,7 @@ import { communities, companies, incidents, messages } from "@/db/schema";
 import { generateCode, incidentReference } from "@/lib/codes";
 import { classifyIncidentAI } from "@/lib/incident-ai";
 import { notifyHighPriority } from "@/lib/notify";
+import { providers } from "@/db/schema";
 import { users } from "@/db/schema";
 import { autoTags, detectCommunity, syncCompanyMail, testImap } from "@/lib/mail-sync";
 import { classifyMessage } from "@/lib/classify";
@@ -287,4 +288,31 @@ export async function finishOnboarding(_prev: ActionState, fd: FormData): Promis
     .where(eq(companies.id, company.id));
   revalidatePath("/app", "layout");
   redirect("/app");
+}
+
+
+// ─── Proveedores ──────────────────────────────────────────────────────────────
+export async function createProvider(fd: FormData) {
+  const { company } = await requireGestor();
+  const communityId = Number(fd.get("communityId"));
+  const [c] = await db.select({ id: communities.id }).from(communities).where(and(eq(communities.id, communityId), eq(communities.companyId, company.id))).limit(1);
+  if (!c) return;
+  await db.insert(providers).values({
+    companyId: company.id,
+    communityId,
+    category: str(fd, "category"),
+    name: str(fd, "name"),
+    phone: str(fd, "phone") || null,
+    email: str(fd, "email") || null,
+    notes: str(fd, "notes") || null,
+  });
+  revalidatePath(`/app/comunidades/${communityId}`);
+}
+
+export async function deleteProvider(fd: FormData) {
+  const { company } = await requireGestor();
+  const id = Number(fd.get("id"));
+  const communityId = Number(fd.get("communityId"));
+  await db.delete(providers).where(and(eq(providers.id, id), eq(providers.companyId, company.id)));
+  revalidatePath(`/app/comunidades/${communityId}`);
 }

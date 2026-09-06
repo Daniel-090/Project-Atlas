@@ -5,6 +5,7 @@ import { requireGestor } from "@/lib/session";
 import { deleteCommunity } from "@/app/actions/panel";
 import { PageHeader } from "@/components/page-header";
 import { CommunityForm } from "@/components/panel-forms";
+import Link from "next/link";
 
 export default async function ComunidadesPage() {
   const { company } = await requireGestor();
@@ -24,7 +25,9 @@ export default async function ComunidadesPage() {
           ) : (
             list.map((c) => (
               <article key={c.id} className="atlas-card atlas-card-pad flex min-w-0 flex-col">
-                <h2 className="text-base font-semibold text-foreground">{c.name}</h2>
+                <Link href={`/app/comunidades/${c.id}`} className="hover:underline">
+                  <h2 className="text-base font-semibold text-foreground">{c.name}</h2>
+                </Link>
                 <p className="mt-1 text-sm text-muted">{c.address || "Sin dirección"}</p>
                 <div className="mt-4 flex flex-wrap gap-2 text-xs">
                   <span className="atlas-chip">{rc.get(c.id) ?? 0} vecinos</span>
