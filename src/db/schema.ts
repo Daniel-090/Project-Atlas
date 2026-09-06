@@ -109,6 +109,7 @@ export const incidents = pgTable("incidents", {
   reporterName: varchar("reporter_name", { length: 120 }),
   reporterContact: varchar("reporter_contact", { length: 160 }),
   internalNote: text("internal_note"),
+  providerId: integer("provider_id").references(() => providers.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

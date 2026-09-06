@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { communities, incidents, residents } from "@/db/schema";
+import { communities, incidents, providers, residents } from "@/db/schema";
 import { requireGestor } from "@/lib/session";
 import { CATEGORY_OPTIONS, categoryLabel } from "@/lib/incident-ai";
 import { updateIncident } from "@/app/actions/panel";
@@ -21,6 +21,7 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
   const row = rows[0];
   if (!row) notFound();
   const { incident, community, resident } = row;
+  const communityProviders = await db.select().from(providers).where(eq(providers.communityId, community.id));
 
   return (
     <>
@@ -90,6 +91,23 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="block">
+              <span className="atlas-label">Proveedor asignado</span>
+              <select name="providerId" defaultValue={incident.providerId ?? ""} className="atlas-input">
+                <option value="">Sin asignar</option>
+                {communityProviders.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {categoryLabel(p.category)}
+                  </option>
+                ))}
+              </select>
+              {communityProviders.length === 0 ? (
+                <p className="mt-1 text-xs text-muted">
+                  Esta comunidad aún no tiene proveedores.{" "}
+                  <Link href={`/app/comunidades/${community.id}`} className="underline">Añade uno aquí</Link>.
+                </p>
+              ) : null}
             </label>
             <label className="block">
               <span className="atlas-label">Nota interna</span>

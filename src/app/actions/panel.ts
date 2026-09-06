@@ -91,11 +91,13 @@ export async function updateIncident(fd: FormData) {
   const status = str(fd, "status");
   const category = str(fd, "category");
   const internalNote = str(fd, "internalNote");
+  const providerIdRaw = str(fd, "providerId");
   await db
     .update(incidents)
     .set({
       ...(status ? { status } : {}),
       ...(category ? { category } : {}),
+      providerId: providerIdRaw ? Number(providerIdRaw) : null,
       internalNote: internalNote || null,
       updatedAt: new Date(),
     })
