@@ -53,3 +53,67 @@ export const PRIORITY_LABEL: Record<string, string> = {
   media: "Media",
   alta: "Alta",
 };
+
+
+// ─── Clasificación con IA (Gemini) + doble verificación, con fallback a palabras clave ──────
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const CATEGORY_KEYS = CATEGORIES.map((c) => c.key).concat("general");
+
+async function askGemini(prompt: string): Promise<string | null> {
+  if (!genAI) return null;
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (err) {
+    console.error("Error llamando a Gemini para clasificar incidencia", err);
+    return null;
+  }
+}
+
+export async function classifyIncidentAI(title: string, description: string): Promise<Classification> {
+  const fallback = classifyIncident(title, description);
+
+  const prompt1 = `Eres un clasificador de incidencias para una gestoría de comunidades de vecinos.
+Categorías válidas: ${CATEGORY_KEYS.join(", ")}.
+Prioridades válidas: baja, media, alta.
+
+Incidencia:
+Título: ${title}
+Descripción: ${description}
+
+Responde SOLO en este formato exacto, sin explicaciones: categoria|prioridad`;
+
+  const first = await askGemini(prompt1);
+  if (!first) return fallback;
+
+  const [cat1, pri1] = first.split("|").map((s) => s.trim().toLowerCase());
+
+  // Segunda pasada: verificación
+  const prompt2 = `Revisa esta clasificación de una incidencia de comunidad de vecinos y corrígela si está mal.
+Categorías válidas: ${CATEGORY_KEYS.join(", ")}.
+Prioridades válidas: baja, media, alta.
+
+Título: ${title}
+Descripción: ${description}
+Clasificación propuesta: categoría=${cat1}, prioridad=${pri1}
+
+Responde SOLO en este formato exacto, sin explicaciones: categoria|prioridad`;
+
+  const second = await askGemini(prompt2);
+  if (!second) {
+    const category = CATEGORY_KEYS.includes(cat1) ? cat1 : fallback.category;
+    const priority = ["baja", "media", "alta"].includes(pri1) ? (pri1 as Classification["priority"]) : fallback.priority;
+    return { category, priority };
+  }
+
+  const [cat2, pri2] = second.split("|").map((s) => s.trim().toLowerCase());
+  const category = CATEGORY_KEYS.includes(cat2) ? cat2 : (CATEGORY_KEYS.includes(cat1) ? cat1 : fallback.category);
+  const priority = ["baja", "media", "alta"].includes(pri2)
+    ? (pri2 as Classification["priority"])
+    : (["baja", "media", "alta"].includes(pri1) ? (pri1 as Classification["priority"]) : fallback.priority);
+
+  return { category, priority };
+}

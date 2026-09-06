@@ -6,7 +6,9 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { communities, companies, incidents, messages } from "@/db/schema";
 import { generateCode, incidentReference } from "@/lib/codes";
-import { classifyIncident } from "@/lib/incident-ai";
+import { classifyIncidentAI } from "@/lib/incident-ai";
+import { notifyHighPriority } from "@/lib/notify";
+import { users } from "@/db/schema";
 import { autoTags, detectCommunity, syncCompanyMail, testImap } from "@/lib/mail-sync";
 import { classifyMessage } from "@/lib/classify";
 import { requireGestor, requireResident } from "@/lib/session";
@@ -48,7 +50,7 @@ export async function createIncidentAsGestor(_prev: ActionState, fd: FormData): 
     .where(and(eq(communities.id, communityId), eq(communities.companyId, company.id)))
     .limit(1);
   if (!c) return { error: "Comunidad no válida." };
-  const ai = classifyIncident(title, description);
+  const ai = await classifyIncidentAI(title, description);
   const [row] = await db
     .insert(incidents)
     .values({
@@ -58,12 +60,25 @@ export async function createIncidentAsGestor(_prev: ActionState, fd: FormData): 
       title,
       description,
       category: str(fd, "category") || ai.category,
-      priority: (str(fd, "priority") || ai.priority) as string,
+      priority: ai.priority,
       reporterName: str(fd, "reporterName") || null,
       reporterContact: str(fd, "reporterContact") || null,
     })
     .returning({ id: incidents.id });
   await db.update(incidents).set({ reference: incidentReference(row.id) }).where(eq(incidents.id, row.id));
+
+  if (ai.priority === "alta") {
+    const teamEmails = await db.select({ email: users.email }).from(users).where(eq(users.companyId, company.id));
+    const [comm] = await db.select({ name: communities.name }).from(communities).where(eq(communities.id, communityId)).limit(1);
+    notifyHighPriority({
+      emails: [...teamEmails.map((u) => u.email), ...company.emailsJson],
+      reference: incidentReference(row.id),
+      title,
+      communityName: comm?.name ?? "",
+      incidentId: row.id,
+    });
+  }
+
   revalidatePath("/app/incidencias");
   revalidatePath("/app");
   redirect(`/app/incidencias/${row.id}`);
@@ -73,14 +88,12 @@ export async function updateIncident(fd: FormData) {
   const { company } = await requireGestor();
   const id = Number(fd.get("id"));
   const status = str(fd, "status");
-  const priority = str(fd, "priority");
   const category = str(fd, "category");
   const internalNote = str(fd, "internalNote");
   await db
     .update(incidents)
     .set({
       ...(status ? { status } : {}),
-      ...(priority ? { priority } : {}),
       ...(category ? { category } : {}),
       internalNote: internalNote || null,
       updatedAt: new Date(),
@@ -96,7 +109,7 @@ export async function createIncidentAsResident(_prev: ActionState, fd: FormData)
   const title = str(fd, "title");
   const description = str(fd, "description");
   if (!title || !description) return { error: "Describe la incidencia con un título y un detalle." };
-  const ai = classifyIncident(title, description);
+  const ai = await classifyIncidentAI(title, description);
   const [row] = await db
     .insert(incidents)
     .values({
@@ -113,6 +126,20 @@ export async function createIncidentAsResident(_prev: ActionState, fd: FormData)
     })
     .returning({ id: incidents.id });
   await db.update(incidents).set({ reference: incidentReference(row.id) }).where(eq(incidents.id, row.id));
+
+  if (ai.priority === "alta") {
+    const [comp] = await db.select().from(companies).where(eq(companies.id, resident.companyId)).limit(1);
+    const teamEmails = await db.select({ email: users.email }).from(users).where(eq(users.companyId, resident.companyId));
+    const [comm] = await db.select({ name: communities.name }).from(communities).where(eq(communities.id, resident.communityId)).limit(1);
+    notifyHighPriority({
+      emails: [...teamEmails.map((u) => u.email), ...(comp?.emailsJson ?? [])],
+      reference: incidentReference(row.id),
+      title,
+      communityName: comm?.name ?? "",
+      incidentId: row.id,
+    });
+  }
+
   revalidatePath("/vecino/portal");
   redirect("/vecino/portal?creada=1");
 }

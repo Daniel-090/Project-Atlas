@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { communities, incidents } from "@/db/schema";
 import { requireGestor } from "@/lib/session";
@@ -24,7 +24,10 @@ export default async function IncidenciasPage({ searchParams }: { searchParams: 
       .from(incidents)
       .innerJoin(communities, eq(incidents.communityId, communities.id))
       .where(where)
-      .orderBy(desc(incidents.createdAt)),
+      .orderBy(
+        sql`CASE ${incidents.priority} WHEN 'alta' THEN 0 WHEN 'media' THEN 1 ELSE 2 END`,
+        desc(incidents.createdAt)
+      ),
     db.select({ id: communities.id, name: communities.name }).from(communities).where(eq(communities.companyId, company.id)),
   ]);
 

@@ -82,14 +82,6 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
               </select>
             </label>
             <label className="block">
-              <span className="atlas-label">Prioridad</span>
-              <select name="priority" defaultValue={incident.priority} className="atlas-input">
-                <option value="baja">Baja</option>
-                <option value="media">Media</option>
-                <option value="alta">Alta</option>
-              </select>
-            </label>
-            <label className="block">
               <span className="atlas-label">Categoría</span>
               <select name="category" defaultValue={incident.category} className="atlas-input">
                 {CATEGORY_OPTIONS.map((c) => (
