@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { companies, messages } from "@/db/schema";
 import { autoTags, detectCommunity } from "@/lib/mail-sync";
+import { classifyMessage } from "@/lib/classify";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,11 @@ export async function POST(req: NextRequest) {
     })
     .onConflictDoNothing()
     .returning({ id: messages.id });
+
+  if (row) {
+    classifyMessage(row.id, text, subject);
+  }
+
   return Response.json({ ok: true, id: row?.id ?? null, duplicated: !row });
 }
 

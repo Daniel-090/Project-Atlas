@@ -8,6 +8,7 @@ import { communities, companies, incidents, messages } from "@/db/schema";
 import { generateCode, incidentReference } from "@/lib/codes";
 import { classifyIncident } from "@/lib/incident-ai";
 import { autoTags, detectCommunity, syncCompanyMail, testImap } from "@/lib/mail-sync";
+import { classifyMessage } from "@/lib/classify";
 import { requireGestor, requireResident } from "@/lib/session";
 import { normalizeHex } from "@/lib/theme";
 import type { ActionState } from "./auth";
@@ -130,17 +131,23 @@ export async function logMessage(_prev: ActionState, fd: FormData): Promise<Acti
   const tags = autoTags(subject, body);
   if (fd.get("factura") === "on" && !tags.includes("factura")) tags.push("factura");
   const communityId = communityIdRaw || (await detectCommunity(company.id, sender.includes("@") ? sender : null, `${subject} ${body}`));
-  await db.insert(messages).values({
+  const direction = str(fd, "direction") === "out" ? "out" : "in";
+  const [inserted] = await db.insert(messages).values({
     companyId: company.id,
     communityId,
     channel,
-    direction: str(fd, "direction") === "out" ? "out" : "in",
+    direction,
     sender,
     subject,
     body,
     tags,
     isRead: true,
-  });
+  }).returning({ id: messages.id });
+
+  if (direction === "in" && inserted) {
+    classifyMessage(inserted.id, body, subject);
+  }
+
   revalidatePath("/app/bandeja");
   revalidatePath("/app");
   return {};

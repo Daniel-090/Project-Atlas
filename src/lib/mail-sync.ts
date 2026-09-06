@@ -1,3 +1,4 @@
+import { classifyMessage } from "@/lib/classify";
 import "server-only";
 import { ImapFlow } from "imapflow";
 import { and, eq, inArray } from "drizzle-orm";
@@ -149,7 +150,7 @@ export async function syncCompanyMail(company: Company): Promise<SyncResult> {
           if (seen.has(c.externalId)) continue;
           const body = c.source ? extractPlainText(c.source) : "";
           const communityId = await detectCommunity(company.id, c.senderEmail, `${c.subject} ${body}`);
-          await db
+          const [insertedEmail] = await db
             .insert(messages)
             .values({
               companyId: company.id,
@@ -163,7 +164,12 @@ export async function syncCompanyMail(company: Company): Promise<SyncResult> {
               externalId: c.externalId,
               createdAt: c.date,
             })
-            .onConflictDoNothing();
+            .onConflictDoNothing()
+            .returning({ id: messages.id });
+
+          if (insertedEmail) {
+            classifyMessage(insertedEmail.id, body, c.subject);
+          }
           imported++;
         }
       }

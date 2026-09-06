@@ -127,6 +127,8 @@ export const messages = pgTable("messages", {
   body: text("body").notNull().default(""),
   tags: jsonb("tags").$type<string[]>().notNull().default([]), // factura | aviso | documento
   isRead: boolean("is_read").notNull().default(false),
+  isRelevant: boolean("is_relevant"), // null = aún sin clasificar por IA
+  classifiedAt: timestamp("classified_at", { withTimezone: true }),
   externalId: varchar("external_id", { length: 240 }).unique(), // Message-ID (dedupe)
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
