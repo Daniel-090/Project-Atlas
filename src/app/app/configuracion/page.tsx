@@ -39,7 +39,7 @@ export default async function ConfiguracionPage() {
           <ContactsForm initial={{ phone: company.phone ?? "", whatsapp: company.whatsappJson.join("\n"), emails: company.emailsJson.join("\n") }} />
         </Section>
 
-        <Section id="correo" eyebrow="Correo" title="Buzón IMAP" description="Conecta el buzón de la gestoría. Atlas importa los últimos mensajes, detecta la comunidad y etiqueta facturas automáticamente.">
+        <Section id="correo" eyebrow="Correo" title="Buzón IMAP" description="Conecta el buzón de la gestoría. Atlas importa los últimos mensajes, detecta la comunidad y etiqueta facturas automáticamente." comingSoon>
           <ImapForm
             initial={{
               host: company.imapHost ?? "",
@@ -53,7 +53,7 @@ export default async function ConfiguracionPage() {
           />
         </Section>
 
-        <Section id="whatsapp" eyebrow="WhatsApp" title="Webhook de entrada" description="Conecta tu bridge (Make, Zapier o tu propio servicio) a esta URL. Cada POST crea un mensaje en la Bandeja.">
+        <Section id="whatsapp" eyebrow="WhatsApp" title="Webhook de entrada" description="Conecta tu bridge (Make, Zapier o tu propio servicio) a esta URL. Cada POST crea un mensaje en la Bandeja." comingSoon>
           <div className="grid gap-4 text-sm sm:gap-3 min-w-0">
             <div className="min-w-0">
               <span className="atlas-label">URL del webhook</span>
@@ -86,15 +86,31 @@ export default async function ConfiguracionPage() {
   );
 }
 
-function Section({ id, eyebrow, title, description, children }: { id: string; eyebrow: string; title: string; description: string; children: React.ReactNode }) {
+function Section({ id, eyebrow, title, description, children, comingSoon }: { id: string; eyebrow: string; title: string; description: string; children: React.ReactNode; comingSoon?: boolean }) {
   return (
-    <section id={id} className="atlas-card atlas-card-pad min-w-0 scroll-mt-6">
+    <section id={id} className="atlas-card atlas-card-pad min-w-0 scroll-mt-6 relative">
       <div className="mb-5 border-b border-border pb-4 sm:mb-6 sm:pb-5">
-        <p className="atlas-eyebrow">{eyebrow}</p>
+        <div className="flex items-center gap-2">
+          <p className="atlas-eyebrow">{eyebrow}</p>
+          {comingSoon ? (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              Próximamente
+            </span>
+          ) : null}
+        </div>
         <h2 className="mt-1 text-lg font-semibold text-foreground">{title}</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>
       </div>
-      {children}
+      <div className={comingSoon ? "pointer-events-none select-none opacity-40" : undefined}>
+        {children}
+      </div>
+      {comingSoon ? (
+        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--atlas-radius)] bg-background/40 backdrop-blur-[1px]">
+          <span className="atlas-card rounded-full border border-border bg-surface px-4 py-2 text-xs font-medium text-foreground shadow-sm">
+            Estamos verificando esta conexión — disponible muy pronto
+          </span>
+        </div>
+      ) : null}
     </section>
   );
 }
