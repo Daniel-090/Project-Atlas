@@ -56,19 +56,21 @@ export const PRIORITY_LABEL: Record<string, string> = {
 
 
 // ─── Clasificación con IA (Gemini) + doble verificación, con fallback a palabras clave ──────
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 const CATEGORY_KEYS = CATEGORIES.map((c) => c.key).concat("general");
 
 async function askGemini(prompt: string): Promise<string | null> {
-  if (!genAI) return null;
+  if (!groq) return null;
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-    const result = await model.generateContent(prompt);
-    return result.response.text().trim();
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+    });
+    return (completion.choices[0]?.message?.content ?? "").trim();
   } catch (err) {
-    console.error("Error llamando a Gemini para clasificar incidencia", err);
+    console.error("Error llamando a Groq para clasificar incidencia", err);
     return null;
   }
 }
@@ -116,4 +118,34 @@ Responde SOLO en este formato exacto, sin explicaciones: categoria|prioridad`;
     : (["baja", "media", "alta"].includes(pri1) ? (pri1 as Classification["priority"]) : fallback.priority);
 
   return { category, priority };
+}
+
+
+// ─── Selección de proveedor con IA ─────────────────────────────────────────────
+export async function pickProviderAI(
+  category: string,
+  title: string,
+  description: string,
+  candidates: Array<{ id: number; name: string; notes: string | null }>
+): Promise<number | null> {
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0].id;
+  if (!groq) return null;
+
+  const list = candidates.map((c) => `id=${c.id} · ${c.name}${c.notes ? ` (${c.notes})` : ""}`).join("\n");
+  const prompt = `Eres un asistente de una gestoría de comunidades. Elige el proveedor más adecuado para esta incidencia de categoría "${category}".
+
+Incidencia:
+Título: ${title}
+Descripción: ${description}
+
+Proveedores disponibles:
+${list}
+
+Responde SOLO con el id numérico del proveedor elegido, sin nada más.`;
+
+  const text = await askGemini(prompt);
+  if (!text) return null;
+  const id = Number(text.replace(/\D/g, ""));
+  return candidates.some((c) => c.id === id) ? id : null;
 }

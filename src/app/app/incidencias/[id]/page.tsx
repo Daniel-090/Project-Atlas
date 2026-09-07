@@ -72,6 +72,18 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
 
         <aside className="atlas-card atlas-card-pad h-fit">
           <h2 className="text-sm font-semibold text-foreground">Gestión</h2>
+          <div className="mt-4 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface p-3">
+            <div>
+              <span className="atlas-label">Categoría (IA)</span>
+              <p className="mt-1 text-sm font-semibold text-foreground">{categoryLabel(incident.category)}</p>
+            </div>
+            <div>
+              <span className="atlas-label">Prioridad (IA)</span>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {incident.priority === "alta" ? "Alta" : incident.priority === "baja" ? "Baja" : "Media"}
+              </p>
+            </div>
+          </div>
           <form action={updateIncident} className="mt-4 grid gap-4">
             <input type="hidden" name="id" value={incident.id} />
             <label className="block">
@@ -80,16 +92,6 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
                 <option value="abierta">Abierta</option>
                 <option value="en_curso">En curso</option>
                 <option value="resuelta">Resuelta</option>
-              </select>
-            </label>
-            <label className="block">
-              <span className="atlas-label">Categoría</span>
-              <select name="category" defaultValue={incident.category} className="atlas-input">
-                {CATEGORY_OPTIONS.map((c) => (
-                  <option key={c.key} value={c.key}>
-                    {c.label}
-                  </option>
-                ))}
               </select>
             </label>
             <label className="block">

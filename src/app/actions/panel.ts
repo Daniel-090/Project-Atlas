@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { communities, companies, incidents, messages } from "@/db/schema";
 import { generateCode, incidentReference } from "@/lib/codes";
-import { classifyIncidentAI } from "@/lib/incident-ai";
+import { classifyIncidentAI, pickProviderAI } from "@/lib/incident-ai";
 import { notifyHighPriority } from "@/lib/notify";
 import { providers } from "@/db/schema";
 import { users } from "@/db/schema";
@@ -52,6 +52,13 @@ export async function createIncidentAsGestor(_prev: ActionState, fd: FormData): 
     .limit(1);
   if (!c) return { error: "Comunidad no válida." };
   const ai = await classifyIncidentAI(title, description);
+  const finalCategory = str(fd, "category") || ai.category;
+  const candidateProviders = await db
+    .select({ id: providers.id, name: providers.name, notes: providers.notes })
+    .from(providers)
+    .where(and(eq(providers.communityId, communityId), eq(providers.category, finalCategory)));
+  const providerId = await pickProviderAI(finalCategory, title, description, candidateProviders);
+
   const [row] = await db
     .insert(incidents)
     .values({
@@ -60,8 +67,9 @@ export async function createIncidentAsGestor(_prev: ActionState, fd: FormData): 
       reference: "INC-PENDING",
       title,
       description,
-      category: str(fd, "category") || ai.category,
+      category: finalCategory,
       priority: ai.priority,
+      providerId,
       reporterName: str(fd, "reporterName") || null,
       reporterContact: str(fd, "reporterContact") || null,
     })
@@ -113,6 +121,12 @@ export async function createIncidentAsResident(_prev: ActionState, fd: FormData)
   const description = str(fd, "description");
   if (!title || !description) return { error: "Describe la incidencia con un título y un detalle." };
   const ai = await classifyIncidentAI(title, description);
+  const candidateProviders = await db
+    .select({ id: providers.id, name: providers.name, notes: providers.notes })
+    .from(providers)
+    .where(and(eq(providers.communityId, resident.communityId), eq(providers.category, ai.category)));
+  const providerId = await pickProviderAI(ai.category, title, description, candidateProviders);
+
   const [row] = await db
     .insert(incidents)
     .values({
@@ -124,6 +138,7 @@ export async function createIncidentAsResident(_prev: ActionState, fd: FormData)
       description,
       category: ai.category,
       priority: ai.priority,
+      providerId,
       reporterName: resident.name,
       reporterContact: resident.email,
     })
