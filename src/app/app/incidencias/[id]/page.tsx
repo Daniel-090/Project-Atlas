@@ -21,7 +21,7 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
   const row = rows[0];
   if (!row) notFound();
   const { incident, community, resident } = row;
-  const communityProviders = await db.select().from(providers).where(eq(providers.communityId, community.id));
+  const communityProviders = await db.select().from(providers).where(and(eq(providers.communityId, community.id), eq(providers.category, incident.category)));
 
   return (
     <>
@@ -106,7 +106,7 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
               </select>
               {communityProviders.length === 0 ? (
                 <p className="mt-1 text-xs text-muted">
-                  Esta comunidad aún no tiene proveedores.{" "}
+                  Esta comunidad aún no tiene proveedores de {categoryLabel(incident.category)}.{" "}
                   <Link href={`/app/comunidades/${community.id}`} className="underline">Añade uno aquí</Link>.
                 </p>
               ) : null}
