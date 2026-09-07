@@ -74,11 +74,11 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
           <h2 className="text-sm font-semibold text-foreground">Gestión</h2>
           <div className="mt-4 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface p-3">
             <div>
-              <span className="atlas-label">Categoría (IA)</span>
+              <span className="atlas-label">Categoría</span>
               <p className="mt-1 text-sm font-semibold text-foreground">{categoryLabel(incident.category)}</p>
             </div>
             <div>
-              <span className="atlas-label">Prioridad (IA)</span>
+              <span className="atlas-label">Prioridad</span>
               <p className="mt-1 text-sm font-semibold text-foreground">
                 {incident.priority === "alta" ? "Alta" : incident.priority === "baja" ? "Baja" : "Media"}
               </p>
