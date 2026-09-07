@@ -84,7 +84,7 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
               </p>
             </div>
           </div>
-          <form action={updateIncident} className="mt-4 grid gap-4">
+          <form key={incident.updatedAt.toISOString()} action={updateIncident} className="mt-4 grid gap-4">
             <input type="hidden" name="id" value={incident.id} />
             <label className="block">
               <span className="atlas-label">Estado</span>
