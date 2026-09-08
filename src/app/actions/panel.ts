@@ -9,6 +9,7 @@ import { generateCode, incidentReference } from "@/lib/codes";
 import { classifyIncidentAI, pickProviderAI } from "@/lib/incident-ai";
 import { notifyHighPriority } from "@/lib/notify";
 import { providers } from "@/db/schema";
+import { hashPassword } from "@/lib/password";
 import { users } from "@/db/schema";
 import { autoTags, detectCommunity, syncCompanyMail, testImap } from "@/lib/mail-sync";
 import { classifyMessage } from "@/lib/classify";
@@ -332,4 +333,30 @@ export async function deleteProvider(fd: FormData) {
   const communityId = Number(fd.get("communityId"));
   await db.delete(providers).where(and(eq(providers.id, id), eq(providers.companyId, company.id)));
   revalidatePath(`/app/comunidades/${communityId}`);
+}
+
+
+// ─── Equipo ────────────────────────────────────────────────────────────────────
+export async function addTeamUser(_prev: ActionState, fd: FormData): Promise<ActionState> {
+  const { company } = await requireGestor();
+  const name = str(fd, "name");
+  const email = str(fd, "email").toLowerCase();
+  const password = str(fd, "password");
+  if (!name || !email || password.length < 6) {
+    return { error: "Rellena nombre, email y una contraseña de al menos 6 caracteres." };
+  }
+  const exists = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+  if (exists.length) return { error: "Ya existe una cuenta con ese email." };
+
+  await db.insert(users).values({ companyId: company.id, name, email, passwordHash: hashPassword(password) });
+  revalidatePath("/app/configuracion");
+  return {};
+}
+
+export async function removeTeamUser(fd: FormData) {
+  const { company, user } = await requireGestor();
+  const id = Number(fd.get("id"));
+  if (id === user.id) return; // no puedes eliminarte a ti mismo
+  await db.delete(users).where(and(eq(users.id, id), eq(users.companyId, company.id)));
+  revalidatePath("/app/configuracion");
 }

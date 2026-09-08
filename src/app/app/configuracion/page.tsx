@@ -1,7 +1,11 @@
 import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
 import { requireGestor } from "@/lib/session";
 import { PageHeader, formatDate } from "@/components/page-header";
-import { ContactsForm, CustomizationForm, ImapForm } from "@/components/panel-forms";
+import { ContactsForm, CustomizationForm, ImapForm, TeamForm } from "@/components/panel-forms";
+import { removeTeamUser } from "@/app/actions/panel";
+import { users } from "@/db/schema";
 import { ThemePreview } from "@/components/onboarding-wizard";
 
 export default async function ConfiguracionPage() {
@@ -10,6 +14,7 @@ export default async function ConfiguracionPage() {
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "atlasapp.es";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
   const webhookUrl = `${proto}://${host}/api/hooks/whatsapp?secret=${company.whatsappSecret}`;
+  const teamUsers = await db.select().from(users).where(eq(users.companyId, company.id));
 
   return (
     <>
@@ -80,6 +85,30 @@ export default async function ConfiguracionPage() {
               <dd className="text-foreground">{user.email}</dd>
             </div>
           </dl>
+        </Section>
+
+        <Section id="equipo" eyebrow="Equipo" title="Acceso de tu equipo" description="Añade compañeros de tu gestoría para que puedan entrar con su propio email y contraseña.">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-3">
+              {teamUsers.map((u) => (
+                <div key={u.id} className="atlas-card flex items-center justify-between gap-3 !p-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">{u.name}</p>
+                    <p className="truncate text-xs text-muted">{u.email}</p>
+                  </div>
+                  {u.id !== user.id ? (
+                    <form action={removeTeamUser}>
+                      <input type="hidden" name="id" value={u.id} />
+                      <button className="atlas-btn-ghost text-xs">Eliminar</button>
+                    </form>
+                  ) : (
+                    <span className="atlas-chip text-[10px]">Tú</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <TeamForm />
+          </div>
         </Section>
       </div>
     </>

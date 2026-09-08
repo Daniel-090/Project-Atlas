@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import type { ActionState } from "@/app/actions/auth";
-import { createCommunity, createIncidentAsGestor, createIncidentAsResident, logMessage, saveContacts, saveCustomization, saveImap } from "@/app/actions/panel";
+import { addTeamUser, createCommunity, createIncidentAsGestor, createIncidentAsResident, logMessage, saveContacts, saveCustomization, saveImap } from "@/app/actions/panel";
 import { CATEGORY_OPTIONS } from "@/lib/incident-ai";
 import { Field, Notice, SubmitButton } from "@/components/ui";
 
@@ -222,6 +222,27 @@ export function ContactsForm({ initial }: { initial: { phone: string; whatsapp: 
       </div>
       <div className="sm:col-span-2 flex justify-end">
         <SubmitButton>Guardar contactos</SubmitButton>
+      </div>
+    </form>
+  );
+}
+
+export function TeamForm() {
+  const [state, action] = useActionState<ActionState, FormData>(addTeamUser, undefined);
+  return (
+    <form action={action} className="grid min-w-0 gap-4">
+      <Field label="Nombre">
+        <input name="name" className="atlas-input min-w-0 max-w-full" placeholder="María López" required />
+      </Field>
+      <Field label="Email de acceso">
+        <input name="email" type="email" className="atlas-input min-w-0 max-w-full" placeholder="maria@gestoria.com" required />
+      </Field>
+      <Field label="Contraseña (mín. 6 caracteres)">
+        <input name="password" type="password" className="atlas-input min-w-0 max-w-full" required minLength={6} />
+      </Field>
+      <Notice message={state?.error} />
+      <div className="flex justify-end">
+        <SubmitButton>Añadir compañero</SubmitButton>
       </div>
     </form>
   );
