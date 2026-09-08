@@ -23,7 +23,7 @@ export function ThemePreview({ primary, secondary, background, theme, name, logo
         <div className="w-28 shrink-0 p-3" style={{ background: "var(--atlas-sidebar)", borderRight: "1px solid var(--atlas-border)" }}>
           <div className="flex items-center gap-2">
             {logoUrl ? (
-              <img src={logoUrl} alt="" className="h-6 w-6 rounded-md object-cover" />
+              <img src={logoUrl} alt="" className="h-6 w-6 rounded-md bg-white object-contain p-0.5" />
             ) : (
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold" style={{ background: "var(--atlas-primary)", color: "var(--atlas-on-primary)" }}>
                 {name.slice(0, 1).toUpperCase() || "A"}

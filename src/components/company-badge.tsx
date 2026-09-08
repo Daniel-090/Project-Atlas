@@ -8,7 +8,7 @@ export function CompanyBadge({ name, logoUrl, code, compact = false }: { name: s
   return (
     <div className="flex items-center gap-3">
       {logoUrl ? (
-        <img src={logoUrl} alt={name} className="h-10 w-10 rounded-xl border border-border object-cover" />
+        <img src={logoUrl} alt={name} className="h-10 w-10 rounded-xl border border-border bg-white object-contain p-0.5" />
       ) : (
         <span
           className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
