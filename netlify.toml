@@ -1,0 +1,20 @@
+# Atlas en Netlify
+#
+# Netlify detecta Next.js automáticamente, pero dejamos la configuración explícita
+# para fijar Node 22 y el plugin oficial (el que convierte la app en funciones
+# serverless).publish = ".next" es obligatorio con este plugin.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+  [build.environment]
+    NODE_VERSION = "22"
+
+# Plugin oficial de Next.js para Netlify (OpenNext adapter).
+# Se instala como devDependency; si prefieres que Netlify lo gestione solo,
+# borra este bloque y el paquete de package.json.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Sin comando de arranque: en Netlify no hay servidor, son funciones serverless.

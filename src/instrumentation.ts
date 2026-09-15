@@ -1,6 +1,15 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   if (process.env.NEXT_PHASE === "phase-production-build") return;
+
+  // En serverless (Netlify/Lambda) no hay proceso permanente: un setInterval
+  // moriría con la función. Ahí la sincronización de correo se hace bajo demanda
+  // desde el botón "Sincronizar ahora" de Configuración.
+  if (process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY === "true") {
+    console.log("[atlas] entorno serverless detectado: sincronización de correo solo bajo demanda.");
+    return;
+  }
+
   const g = globalThis as typeof globalThis & { __atlasMailTimer?: NodeJS.Timeout };
   if (g.__atlasMailTimer) return;
 
