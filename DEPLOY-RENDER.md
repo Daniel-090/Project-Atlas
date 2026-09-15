@@ -8,6 +8,22 @@ inmobiliarias **subidos a GitHub en la rama `main`**.
 
 ---
 
+## 0. Si quieres que salga GRATIS
+
+Render ya **no tiene PostgreSQL gratuito** (solo 30 días de prueba). Para coste cero:
+
+- **Web Service**: plan **Free** (se duerme tras ~15 min sin uso; tarda ~30-50 s en despertar).
+- **Base de datos**: usa un Postgres externo gratuito:
+  - **Neon** (neon.tech) — recomendado, capa gratuita amplia, región Frankfurt.
+  - **Supabase** (supabase.com) — alternativa equivalente.
+
+Al copiar la cadena de conexión, asegúrate de que termina en `?sslmode=require`
+(Neon la incluye por defecto). `src/db/index.ts` ya activa TLS automáticamente
+con Neon, Supabase, Render y RDS.
+
+Si prefieres la base de datos dentro de Render, usa un PostgreSQL **Starter**
+(~7 USD/mes) y cópiala como `DATABASE_URL`. El resto de la guía es igual.
+
 ## A) Blueprint (recomendado) — 5 minutos
 
 1. Render Dashboard → **New** → **Blueprint**.
@@ -52,6 +68,17 @@ Variables de entorno (Environment → Add Environment Variable):
 | `RESEND_API_KEY` | tu clave de Resend (opcional) |
 
 ### 3. Migración de la base de datos (una sola vez)
+
+**Si usas Neon/Supabase**, lo más cómodo es su **SQL Editor** en la web: pega el
+contenido de `drizzle/0001_vertical_inmobiliarias.sql` y ejecútalo. También puedes
+hacerlo desde tu ordenador:
+
+```bash
+psql "postgresql://USUARIO:PASSWORD@EP-HOST.eu-central-1.aws.neon.tech/neondb?sslmode=require" \
+  -f drizzle/0001_vertical_inmobiliarias.sql
+```
+
+
 Hazlo **después** del primer despliegue, desde tu ordenador, con la
 **External Database URL** de Render (achen `sslmode=require`):
 
