@@ -14,10 +14,10 @@ export default function HomePage() {
 
       <section className="flex flex-1 items-center justify-center px-6 pb-16">
         <div className="atlas-card w-full max-w-md p-8 text-center sm:p-10" style={{ boxShadow: "var(--atlas-shadow)" }}>
-          <p className="atlas-eyebrow">Gestión de comunidades</p>
+          <p className="atlas-eyebrow">Administradores de fincas e inmobiliarias</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">Atlas</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Comunidades, vecinos, incidencias y comunicaciones de tu gestoría en un solo lugar.
+            Comunidades o inmuebles, propietarios e inquilinos, solicitudes y comunicaciones de tu empresa en un solo lugar.
           </p>
 
           <div className="mt-8 grid gap-3">
@@ -30,7 +30,7 @@ export default function HomePage() {
           </div>
 
           <p className="mt-8 text-xs text-muted">
-            ¿Nueva gestoría?{" "}
+            ¿Nueva empresa?{" "}
             <Link href="/registro" className="font-semibold text-primary hover:underline">
               Crear cuenta
             </Link>

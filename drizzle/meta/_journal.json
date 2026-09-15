@@ -8,6 +8,13 @@
       "when": 1788545974107,
       "tag": "0000_loud_zeigeist",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789402812044,
+      "tag": "0001_vertical_inmobiliarias",
+      "breakpoints": true
     }
   ]
 }

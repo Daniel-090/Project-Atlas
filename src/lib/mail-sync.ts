@@ -4,6 +4,7 @@ import { ImapFlow } from "imapflow";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { communities, companies, messages, residents, type Company } from "@/db/schema";
+import { getVertical } from "@/verticals";
 
 export const FACTURA_WORDS = ["factura", "recibo", "invoice", "cuota", "derrama"];
 
@@ -16,7 +17,7 @@ export function autoTags(subject: string, body: string): string[] {
   return tags;
 }
 
-/** Detecta la comunidad por el email del remitente (residente) o por nombre citado en el texto. */
+/** Detecta la comunidad/inmueble por el email del remitente o por nombre citado en el texto. */
 export async function detectCommunity(companyId: number, senderEmail: string | null, text: string): Promise<number | null> {
   if (senderEmail) {
     const r = await db
@@ -168,7 +169,7 @@ export async function syncCompanyMail(company: Company): Promise<SyncResult> {
             .returning({ id: messages.id });
 
           if (insertedEmail) {
-            classifyMessage(insertedEmail.id, body, c.subject);
+            classifyMessage(insertedEmail.id, body, c.subject, getVertical(company.vertical));
           }
           imported++;
         }

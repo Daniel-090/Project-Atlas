@@ -5,9 +5,11 @@ import { incidents, messages } from "@/db/schema";
 import { requireResident } from "@/lib/session";
 import { categoryLabel } from "@/lib/incident-ai";
 import { ChannelChip, PageHeader, StatusChip, formatDate } from "@/components/page-header";
+import { getVertical } from "@/verticals";
 
 export default async function PortalPage({ searchParams }: { searchParams: Promise<{ creada?: string }> }) {
   const { resident, community, company } = await requireResident();
+  const v = getVertical(company.vertical);
   const { creada } = await searchParams;
   const [mine, docs] = await Promise.all([
     db.select().from(incidents).where(and(eq(incidents.communityId, community.id), eq(incidents.residentId, resident.id))).orderBy(desc(incidents.createdAt)),
@@ -26,24 +28,24 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
       <PageHeader
         eyebrow={community.name}
         title={`Hola, ${resident.name.split(" ")[0]}`}
-        subtitle={community.address || `Portal del vecino · ${company.name}`}
+        subtitle={community.address || `${v.portalName} · ${company.name}`}
         actions={
           <Link href="/vecino/portal/nueva" className="atlas-btn atlas-btn-primary">
-            Crear incidencia
+            {v.requestCta}
           </Link>
         }
       />
-      {creada ? <p className="atlas-alert mb-5 sm:mb-6">Incidencia enviada. Tu gestoría la ha recibido y la revisará en breve.</p> : null}
+      {creada ? <p className="atlas-alert mb-5 sm:mb-6">{v.request.one} enviada. Tu {v.company.oneLower} la ha recibido y la revisará en breve.</p> : null}
 
       <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
         <section className="grid gap-5 sm:gap-6">
           <div className="atlas-card">
             <div className="border-b border-border px-5 py-4 sm:px-6">
-              <h2 className="text-sm font-semibold text-foreground">Mis incidencias</h2>
+              <h2 className="text-sm font-semibold text-foreground">Mis {v.request.manyLower}</h2>
             </div>
             {mine.length === 0 ? (
               <div className="p-5 sm:p-6">
-                <div className="atlas-empty">Aún no has creado ninguna incidencia.</div>
+                <div className="atlas-empty">Aún no has creado ninguna {v.request.oneLower}.</div>
               </div>
             ) : (
               <ul className="divide-y divide-border">
@@ -52,7 +54,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{i.title}</p>
                       <p className="mt-0.5 text-xs text-muted">
-                        {i.reference} · {categoryLabel(i.category)} · {formatDate(i.createdAt)}
+                        {i.reference} · {categoryLabel(i.category, v)} · {formatDate(i.createdAt)}
                       </p>
                     </div>
                     <StatusChip status={i.status} />
@@ -65,11 +67,11 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
           <div className="atlas-card">
             <div className="border-b border-border px-5 py-4 sm:px-6">
               <h2 className="text-sm font-semibold text-foreground">Documentos y facturas</h2>
-              <p className="text-xs text-muted">Comunicados, facturas y avisos de tu comunidad.</p>
+              <p className="text-xs text-muted">Comunicados, facturas y avisos de tu {v.entity.oneLower}.</p>
             </div>
             {docs.length === 0 ? (
               <div className="p-5 sm:p-6">
-                <div className="atlas-empty">Todavía no hay documentos publicados para tu comunidad.</div>
+                <div className="atlas-empty">Todavía no hay documentos publicados para tu {v.entity.oneLower}.</div>
               </div>
             ) : (
               <ul className="divide-y divide-border">
@@ -94,7 +96,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
         </section>
 
         <aside className="atlas-card atlas-card-pad h-fit lg:sticky lg:top-6">
-          <p className="atlas-eyebrow">Tu gestoría</p>
+          <p className="atlas-eyebrow">Tu {v.company.oneLower}</p>
           <h2 className="mt-1 text-lg font-semibold text-foreground">{company.name}</h2>
           <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
             {company.whatsappJson.map((n) => (
@@ -112,7 +114,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
                 <span aria-hidden>☏</span> {company.phone}
               </a>
             ) : null}
-            {!company.whatsappJson.length && !company.emailsJson.length && !company.phone ? <p className="text-sm text-muted">Tu gestoría aún no ha publicado contactos.</p> : null}
+            {!company.whatsappJson.length && !company.emailsJson.length && !company.phone ? <p className="text-sm text-muted">Tu {v.company.oneLower} aún no ha publicado contactos.</p> : null}
           </div>
         </aside>
       </div>

@@ -6,10 +6,12 @@ import { communities, incidents, messages, residents } from "@/db/schema";
 import { requireGestor } from "@/lib/session";
 import { categoryLabel } from "@/lib/incident-ai";
 import { ChannelChip, PageHeader, PriorityChip, StatusChip, formatDate } from "@/components/page-header";
+import { getVertical } from "@/verticals";
 
 export default async function ResumenPage() {
   const { company, user } = await requireGestor();
   if (!company.onboardingDone) redirect("/app/bienvenida");
+  const v = getVertical(company.vertical);
 
   const [openIncidents, communityCount, residentCount, unread, recent, recentMessages] = await Promise.all([
     db.select({ value: count() }).from(incidents).where(and(eq(incidents.companyId, company.id), ne(incidents.status, "resuelta"))),
@@ -26,12 +28,13 @@ export default async function ResumenPage() {
     db.select().from(messages).where(eq(messages.companyId, company.id)).orderBy(desc(messages.createdAt)).limit(4),
   ]);
 
-  const metrics = [
-    { label: "Incidencias abiertas", value: openIncidents[0].value, href: "/app/incidencias" },
-    { label: "Comunidades", value: communityCount[0].value, href: "/app/comunidades" },
-    { label: "Vecinos registrados", value: residentCount[0].value, href: "/app/residentes" },
-    { label: "Mensajes sin leer", value: unread[0].value, href: "/app/bandeja?filtro=noleidas" },
-  ];
+  const values: Record<"requests" | "entities" | "contacts" | "unread", number> = {
+    requests: openIncidents[0].value,
+    entities: communityCount[0].value,
+    contacts: residentCount[0].value,
+    unread: unread[0].value,
+  };
+  const metrics = v.metrics.map((m) => ({ label: m.label, value: values[m.key], href: m.href }));
 
   return (
     <>
@@ -49,14 +52,14 @@ export default async function ResumenPage() {
       <section className="mt-8 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         <div className="atlas-card">
           <div className="flex flex-col gap-2 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <h2 className="text-sm font-semibold text-foreground">Incidencias recientes</h2>
+            <h2 className="text-sm font-semibold text-foreground">{v.request.many} recientes</h2>
             <Link href="/app/incidencias" className="atlas-btn-ghost text-xs font-semibold">
               Ver todas →
             </Link>
           </div>
           {recent.length === 0 ? (
             <div className="p-5 sm:p-6">
-              <div className="atlas-empty">Todavía no hay incidencias. Cuando un vecino cree una desde su portal, aparecerá aquí.</div>
+              <div className="atlas-empty">Todavía no hay {v.request.manyLower}. Cuando un {v.contact.oneLower} cree una desde su portal, aparecerá aquí.</div>
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -66,7 +69,7 @@ export default async function ResumenPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{incident.title}</p>
                       <p className="mt-0.5 truncate text-xs text-muted">
-                        {incident.reference} · {communityName} · {categoryLabel(incident.category)} · {formatDate(incident.createdAt)}
+                        {incident.reference} · {communityName} · {categoryLabel(incident.category, v)} · {formatDate(incident.createdAt)}
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -89,7 +92,7 @@ export default async function ResumenPage() {
           </div>
           {recentMessages.length === 0 ? (
             <div className="p-5 sm:p-6">
-              <div className="atlas-empty">Sin mensajes. Conecta tu correo en Configuración o registra una llamada en la Bandeja.</div>
+              <div className="atlas-empty">Sin mensajes. Conecta tu correo en Configuración o registra una llamada en la Bandeja. Recuerda que verás aquí las comunicaciones de tus {v.entity.manyLower}.</div>
             </div>
           ) : (
             <ul className="divide-y divide-border">

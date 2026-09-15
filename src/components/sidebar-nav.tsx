@@ -3,19 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUnreadCount } from "@/hooks/use-unread-count";
+import { getVertical, type VerticalKey } from "@/verticals";
 
-const ITEMS = [
-  { href: "/app", label: "Resumen" },
-  { href: "/app/incidencias", label: "Incidencias" },
-  { href: "/app/comunidades", label: "Comunidades" },
-  { href: "/app/residentes", label: "Residentes" },
-  { href: "/app/bandeja", label: "Bandeja" },
-  { href: "/app/configuracion", label: "Configuración" },
-];
-
-export function SidebarNav({ unread: initial }: { unread: number }) {
+export function SidebarNav({ vertical, unread: initial }: { vertical: VerticalKey; unread: number }) {
   const pathname = usePathname();
   const unread = useUnreadCount(initial);
+  const ITEMS = getVertical(vertical).nav;
 
   return (
     <nav className="flex gap-1 overflow-x-auto pb-1 lg:grid lg:overflow-visible lg:pb-0">

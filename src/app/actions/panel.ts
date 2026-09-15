@@ -15,6 +15,7 @@ import { autoTags, detectCommunity, syncCompanyMail, testImap } from "@/lib/mail
 import { classifyMessage } from "@/lib/classify";
 import { requireGestor, requireResident } from "@/lib/session";
 import { normalizeHex } from "@/lib/theme";
+import { getVertical } from "@/verticals";
 import type { ActionState } from "./auth";
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
@@ -22,13 +23,88 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 // ─── Comunidades ──────────────────────────────────────────────────────────────
 export async function createCommunity(_prev: ActionState, fd: FormData): Promise<ActionState> {
   const { company } = await requireGestor();
+  const v = getVertical(company.vertical);
   const name = str(fd, "name");
   const address = str(fd, "address");
-  if (!name) return { error: "El nombre de la comunidad es obligatorio." };
-  await db.insert(communities).values({ companyId: company.id, name, address, accessCode: generateCode("RES") });
+  if (!name) return { error: `El nombre del ${v.entity.oneLower} es obligatorio.` };
+
+  // Campos de cartera (vertical inmobiliarias). En fincas se ignoran.
+  const num = (k: string) => {
+    const raw = str(fd, k);
+    const n = Number(raw);
+    return raw && Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const portfolio = v.features.propertyAttributes
+    ? {
+        propertyType: str(fd, "propertyType") || null,
+        operationType: str(fd, "operationType") || null,
+        listingStatus: str(fd, "listingStatus") || "disponible",
+        priceCents: (() => {
+          const raw = str(fd, "price");
+          const n = Number(raw);
+          return raw && Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
+        })(),
+        m2: num("m2"),
+        rooms: num("rooms"),
+        baths: num("baths"),
+        keyCode: str(fd, "keyCode") || null,
+        notes: str(fd, "notes") || null,
+        agentUserId: (() => {
+          const n = Number(str(fd, "agentUserId"));
+          return Number.isFinite(n) && n > 0 ? n : null;
+        })(),
+      }
+    : {};
+
+  await db.insert(communities).values({ companyId: company.id, name, address, accessCode: generateCode("RES"), ...portfolio });
   revalidatePath("/app/comunidades");
   revalidatePath("/app");
   return {};
+}
+
+/** Edita la ficha de un inmueble (vertical inmobiliarias). */
+export async function updateProperty(_prev: ActionState, fd: FormData): Promise<ActionState> {
+  const { company } = await requireGestor();
+  const v = getVertical(company.vertical);
+  const id = Number(fd.get("id"));
+  const name = str(fd, "name");
+  if (!id || !name) return { error: "Faltan datos del inmueble." };
+
+  const num = (k: string) => {
+    const raw = str(fd, k);
+    const n = Number(raw);
+    return raw && Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const agentRaw = Number(str(fd, "agentUserId"));
+
+  const [updated] = await db
+    .update(communities)
+    .set({
+      name,
+      address: str(fd, "address"),
+      propertyType: str(fd, "propertyType") || null,
+      operationType: str(fd, "operationType") || null,
+      listingStatus: str(fd, "listingStatus") || "disponible",
+      priceCents: (() => {
+        const raw = str(fd, "price");
+        const n = Number(raw);
+        return raw && Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
+      })(),
+      m2: num("m2"),
+      rooms: num("rooms"),
+      baths: num("baths"),
+      keyCode: str(fd, "keyCode") || null,
+      notes: str(fd, "notes") || null,
+      agentUserId: Number.isFinite(agentRaw) && agentRaw > 0 ? agentRaw : null,
+    })
+    .where(and(eq(communities.id, id), eq(communities.companyId, company.id)))
+    .returning({ id: communities.id });
+
+  if (!updated) return { error: "Inmueble no encontrado." };
+  revalidatePath(`/app/comunidades/${id}`);
+  revalidatePath("/app/comunidades");
+  revalidatePath("/app");
+  return { error: "Ficha guardada." };
 }
 
 export async function deleteCommunity(fd: FormData) {
@@ -42,23 +118,25 @@ export async function deleteCommunity(fd: FormData) {
 // ─── Incidencias ──────────────────────────────────────────────────────────────
 export async function createIncidentAsGestor(_prev: ActionState, fd: FormData): Promise<ActionState> {
   const { company } = await requireGestor();
+  const v = getVertical(company.vertical);
   const communityId = Number(fd.get("communityId"));
   const title = str(fd, "title");
   const description = str(fd, "description");
-  if (!communityId || !title) return { error: "Indica comunidad y título." };
+  if (!communityId || !title) return { error: `Indica ${v.entity.oneLower} y título.` };
   const [c] = await db
     .select({ id: communities.id })
     .from(communities)
     .where(and(eq(communities.id, communityId), eq(communities.companyId, company.id)))
     .limit(1);
-  if (!c) return { error: "Comunidad no válida." };
-  const ai = await classifyIncidentAI(title, description);
+  if (!c) return { error: `${v.entity.one} no válido.` };
+  const ai = await classifyIncidentAI(title, description, v);
   const finalCategory = str(fd, "category") || ai.category;
   const candidateProviders = await db
     .select({ id: providers.id, name: providers.name, notes: providers.notes })
     .from(providers)
     .where(and(eq(providers.communityId, communityId), eq(providers.category, finalCategory)));
-  const providerId = await pickProviderAI(finalCategory, title, description, candidateProviders);
+  const providerId = await pickProviderAI(finalCategory, title, description, candidateProviders, v);
+  const kind = v.features.requestKinds ? str(fd, "kind") || "incidencia" : "incidencia";
 
   const [row] = await db
     .insert(incidents)
@@ -68,6 +146,7 @@ export async function createIncidentAsGestor(_prev: ActionState, fd: FormData): 
       reference: "INC-PENDING",
       title,
       description,
+      kind,
       category: finalCategory,
       priority: ai.priority,
       providerId,
@@ -117,16 +196,17 @@ export async function updateIncident(fd: FormData) {
 }
 
 export async function createIncidentAsResident(_prev: ActionState, fd: FormData): Promise<ActionState> {
-  const { resident } = await requireResident();
+  const { resident, company } = await requireResident();
+  const v = getVertical(company.vertical);
   const title = str(fd, "title");
   const description = str(fd, "description");
   if (!title || !description) return { error: "Describe la incidencia con un título y un detalle." };
-  const ai = await classifyIncidentAI(title, description);
+  const ai = await classifyIncidentAI(title, description, v);
   const candidateProviders = await db
     .select({ id: providers.id, name: providers.name, notes: providers.notes })
     .from(providers)
     .where(and(eq(providers.communityId, resident.communityId), eq(providers.category, ai.category)));
-  const providerId = await pickProviderAI(ai.category, title, description, candidateProviders);
+  const providerId = await pickProviderAI(ai.category, title, description, candidateProviders, v);
 
   const [row] = await db
     .insert(incidents)
@@ -166,6 +246,7 @@ export async function createIncidentAsResident(_prev: ActionState, fd: FormData)
 // ─── Bandeja ──────────────────────────────────────────────────────────────────
 export async function logMessage(_prev: ActionState, fd: FormData): Promise<ActionState> {
   const { company } = await requireGestor();
+  const v = getVertical(company.vertical);
   const channel = str(fd, "channel");
   const sender = str(fd, "sender");
   const subject = str(fd, "subject");
@@ -191,7 +272,7 @@ export async function logMessage(_prev: ActionState, fd: FormData): Promise<Acti
   }).returning({ id: messages.id });
 
   if (direction === "in" && inserted) {
-    classifyMessage(inserted.id, body, subject);
+    classifyMessage(inserted.id, body, subject, v);
   }
 
   revalidatePath("/app/bandeja");

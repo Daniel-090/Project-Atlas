@@ -6,10 +6,12 @@ import { communities, incidents, providers, residents } from "@/db/schema";
 import { requireGestor } from "@/lib/session";
 import { CATEGORY_OPTIONS, categoryLabel } from "@/lib/incident-ai";
 import { updateIncident } from "@/app/actions/panel";
-import { PageHeader, PriorityChip, StatusChip, formatDate } from "@/components/page-header";
+import { KindChip, PageHeader, PriorityChip, StatusChip, formatDate } from "@/components/page-header";
+import { getVertical } from "@/verticals";
 
 export default async function IncidenciaDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { company } = await requireGestor();
+  const v = getVertical(company.vertical);
   const { id } = await params;
   const rows = await db
     .select({ incident: incidents, community: communities, resident: residents })
@@ -27,15 +29,16 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
     <>
       <div className="mb-4">
         <Link href="/app/incidencias" className="atlas-btn-ghost text-xs font-semibold">
-          ← Volver a incidencias
+          ← Volver a {v.request.manyLower}
         </Link>
       </div>
       <PageHeader
         eyebrow={incident.reference}
         title={incident.title}
-        subtitle={`${community.name} · ${categoryLabel(incident.category)} · creada el ${formatDate(incident.createdAt)}`}
+        subtitle={`${community.name} · ${categoryLabel(incident.category, v)} · creada el ${formatDate(incident.createdAt)}`}
         actions={
           <>
+            {v.features.requestKinds ? <KindChip kind={incident.kind} vertical={v.key} /> : null}
             <PriorityChip priority={incident.priority} />
             <StatusChip status={incident.status} />
           </>
@@ -48,7 +51,7 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
             <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground">{incident.description || "Sin descripción."}</p>
           </div>
           <div className="atlas-card atlas-card-pad">
-            <h2 className="text-sm font-semibold text-foreground">Quién avisa</h2>
+            <h2 className="text-sm font-semibold text-foreground">{v.features.contactRoles ? "Quién lo comunica" : "Quién avisa"}</h2>
             <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-xs uppercase tracking-wide text-muted">Nombre</dt>
@@ -59,11 +62,11 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
                 <dd className="mt-0.5 text-foreground">{resident?.email ?? incident.reporterContact ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-muted">Piso</dt>
+                <dt className="text-xs uppercase tracking-wide text-muted">{v.features.propertyAttributes ? "Vivienda" : "Piso"}</dt>
                 <dd className="mt-0.5 text-foreground">{resident?.unit ?? "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-muted">Comunidad</dt>
+                <dt className="text-xs uppercase tracking-wide text-muted">{v.entity.one}</dt>
                 <dd className="mt-0.5 text-foreground">{community.name}</dd>
               </div>
             </dl>
@@ -74,7 +77,7 @@ export default async function IncidenciaDetallePage({ params }: { params: Promis
           <h2 className="text-sm font-semibold text-foreground">Gestión</h2>
           <div className="mt-4 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface p-3">
             <div>
-              <span className="atlas-label">Categoría</span>
+              <span className="atlas-label">{v.features.requestKinds ? "Tipo y categoría" : "Categoría"}</span>
               <p className="mt-1 text-sm font-semibold text-foreground">{categoryLabel(incident.category)}</p>
             </div>
             <div>

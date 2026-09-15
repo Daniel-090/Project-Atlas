@@ -5,10 +5,12 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { logout } from "@/app/actions/auth";
 import { CompanyBadge } from "@/components/company-badge";
+import { getVertical } from "@/verticals";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const { user, company } = await requireGestor();
   const vars = buildThemeVars(company);
+  const v = getVertical(company.vertical);
 
   return (
     <div
@@ -20,7 +22,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-sidebar px-4 py-6 lg:flex">
           <CompanyBadge name={company.name} logoUrl={company.logoUrl} code={company.code} />
           <div className="mt-8 flex-1">
-            <SidebarNav unread={0} />
+            <SidebarNav vertical={v.key} unread={0} />
           </div>
           <div className="mt-6 border-t border-border pt-4">
             <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
@@ -47,7 +49,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
                   Salir
                 </button>
               </form>
-              <MobileNav unread={0} />
+              <MobileNav vertical={v.key} unread={0} />
             </div>
           </header>
           <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-10">{children}</main>

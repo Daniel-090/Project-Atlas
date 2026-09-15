@@ -9,11 +9,14 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-// ─── Gestorías ────────────────────────────────────────────────────────────────
+// ─── Empresas (gestorías e inmobiliarias) ─────────────────────────────────────
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 160 }).notNull(),
   code: varchar("code", { length: 20 }).notNull().unique(), // ATL-XXXXXXXX
+  // Vertical del producto: fincas | inmobiliarias (ver src/verticals).
+  // Por defecto "fincas" para no alterar ninguna cuenta existente.
+  vertical: varchar("vertical", { length: 20 }).notNull().default("fincas"),
   phone: varchar("phone", { length: 40 }),
   // Personalización (solo dentro del panel y del portal del vecino)
   primaryColor: varchar("primary_color", { length: 9 }).notNull().default("#c9a227"),
@@ -61,7 +64,11 @@ export const sessions = pgTable("sessions", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 
-// ─── Comunidades ──────────────────────────────────────────────────────────────
+// ─── Comunidades / Inmuebles ──────────────────────────────────────────────────
+// Tabla compartida por todas las verticales. En la vertical de fincas es una
+// comunidad de vecinos; en la de inmobiliarias es un inmueble de la cartera.
+// Los campos de cartera solo se muestran/rellenan en la vertical inmobiliaria,
+// pero existen siempre para no tener dos esquemas distintos.
 export const communities = pgTable("communities", {
   id: serial("id").primaryKey(),
   companyId: integer("company_id")
@@ -70,6 +77,17 @@ export const communities = pgTable("communities", {
   name: varchar("name", { length: 160 }).notNull(),
   address: varchar("address", { length: 240 }).notNull().default(""),
   accessCode: varchar("access_code", { length: 20 }).notNull().unique(), // RES-XXXXXXXX
+  // ── Ficha de cartera (vertical inmobiliarias) ──
+  propertyType: varchar("property_type", { length: 20 }), // piso | casa | local | oficina | garaje | trastero | edificio | otro
+  operationType: varchar("operation_type", { length: 20 }), // alquiler | venta | alquiler_venta | gestion
+  listingStatus: varchar("listing_status", { length: 20 }).notNull().default("disponible"),
+  priceCents: integer("price_cents"), // precio en céntimos (venta) o renta mensual (alquiler)
+  m2: integer("m2"),
+  rooms: integer("rooms"),
+  baths: integer("baths"),
+  keyCode: varchar("key_code", { length: 40 }), // código/copia de llaves
+  notes: text("notes"), // notas internas del inmueble
+  agentUserId: integer("agent_user_id").references(() => users.id, { onDelete: "set null" }), // agente responsable
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -86,6 +104,9 @@ export const residents = pgTable("residents", {
   email: varchar("email", { length: 160 }).notNull().unique(),
   phone: varchar("phone", { length: 40 }),
   unit: varchar("unit", { length: 40 }), // piso / puerta
+  // Rol del contacto. En la vertical de fincas no se usa (todos son "vecinos").
+  // propietario | inquilino | interesado
+  role: varchar("role", { length: 20 }).notNull().default("propietario"),
   passwordHash: text("password_hash").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -103,6 +124,9 @@ export const incidents = pgTable("incidents", {
   reference: varchar("reference", { length: 20 }).notNull(), // INC-000123
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description").notNull().default(""),
+  // Tipo de entrada: incidencia | solicitud | aviso.
+  // La vertical de fincas solo usa "incidencia" (valor por defecto).
+  kind: varchar("kind", { length: 20 }).notNull().default("incidencia"),
   category: varchar("category", { length: 40 }).notNull().default("general"),
   priority: varchar("priority", { length: 10 }).notNull().default("media"), // baja | media | alta
   status: varchar("status", { length: 12 }).notNull().default("abierta"), // abierta | en_curso | resuelta

@@ -1,46 +1,36 @@
-// Clasificación heurística de incidencias (categoría + prioridad) a partir del texto.
+// Clasificación de incidencias/solicitudes (categoría + prioridad) a partir del texto.
+// El clasificador es compartido por todas las verticales: las categorías, las
+// palabras clave y el contexto del prompt los define cada vertical
+// (src/verticals). Si no se indica vertical, se usa la de fincas, que es el
+// comportamiento histórico de Atlas.
 
-const CATEGORIES: Array<{ key: string; label: string; words: string[] }> = [
-  { key: "fontaneria", label: "Fontanería", words: ["agua", "fuga", "gotera", "humedad", "tubería", "tuberia", "bajante", "inundación", "inundacion", "grifo"] },
-  { key: "electricidad", label: "Electricidad", words: ["luz", "bombilla", "eléctric", "electric", "enchufe", "cuadro", "apagón", "apagon", "fusible"] },
-  { key: "ascensor", label: "Ascensor", words: ["ascensor", "elevador", "atrapad", "montacargas"] },
-  { key: "limpieza", label: "Limpieza", words: ["limpieza", "sucio", "basura", "suciedad", "olor", "residuos"] },
-  { key: "seguridad", label: "Seguridad", words: ["puerta", "cerradura", "portero", "robo", "okupa", "alarma", "cámara", "camara", "llave"] },
-  { key: "convivencia", label: "Convivencia", words: ["ruido", "vecino", "molestia", "fiesta", "perro", "mascota"] },
-  { key: "zonas_comunes", label: "Zonas comunes", words: ["piscina", "jardín", "jardin", "garaje", "portal", "escalera", "azotea", "terraza", "fachada", "tejado"] },
-  { key: "administracion", label: "Administración", words: ["recibo", "cuota", "factura", "derrama", "junta", "acta", "pago", "presupuesto"] },
-];
+import Groq from "groq-sdk";
+import { FINCAS, type CategoryDef, type VerticalConfig } from "@/verticals";
 
-const HIGH = ["urgente", "urgencia", "peligro", "inundación", "inundacion", "incendio", "fuego", "atrapad", "gas", "humo", "no funciona", "sin luz", "sin agua", "rotura", "reventad"];
-const LOW = ["sugerencia", "consulta", "pregunta", "cuando puedan", "sin prisa", "información", "informacion"];
+const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
 export interface Classification {
   category: string;
   priority: "baja" | "media" | "alta";
 }
 
-export function classifyIncident(title: string, description: string): Classification {
-  const text = `${title} ${description}`.toLowerCase();
-  let category = "general";
-  let best = 0;
-  for (const c of CATEGORIES) {
-    const score = c.words.reduce((n, w) => (text.includes(w) ? n + 1 : n), 0);
-    if (score > best) {
-      best = score;
-      category = c.key;
-    }
-  }
-  let priority: Classification["priority"] = "media";
-  if (HIGH.some((w) => text.includes(w))) priority = "alta";
-  else if (LOW.some((w) => text.includes(w))) priority = "baja";
-  return { category, priority };
+// ─── Compatibilidad con el código anterior (vertical fincas) ──────────────────
+export const CATEGORIES: CategoryDef[] = FINCAS.categories;
+
+export function categoryOptions(v: VerticalConfig = FINCAS) {
+  return [{ key: "general", label: "General" }, ...v.categories.map(({ key, label }) => ({ key, label }))];
+
 }
 
-export function categoryLabel(key: string): string {
-  return CATEGORIES.find((c) => c.key === key)?.label ?? "General";
+export const CATEGORY_OPTIONS = categoryOptions(FINCAS);
+
+function categoriesOf(v: VerticalConfig) {
+  return [{ key: "general", label: "General", words: [] as string[] }, ...v.categories];
 }
 
-export const CATEGORY_OPTIONS = [{ key: "general", label: "General" }, ...CATEGORIES.map(({ key, label }) => ({ key, label }))];
+export function categoryLabel(key: string, v: VerticalConfig = FINCAS): string {
+  return categoriesOf(v).find((c) => c.key === key)?.label ?? "General";
+}
 
 export const STATUS_LABEL: Record<string, string> = {
   abierta: "Abierta",
@@ -54,14 +44,26 @@ export const PRIORITY_LABEL: Record<string, string> = {
   alta: "Alta",
 };
 
+/** Clasificación heurística (se usa como fallback cuando la IA no responde). */
+export function classifyIncident(title: string, description: string, v: VerticalConfig = FINCAS): Classification {
+  const text = `${title} ${description}`.toLowerCase();
+  let category = "general";
+  let best = 0;
+  for (const c of v.categories) {
+    const score = c.words.reduce((n, w) => (text.includes(w) ? n + 1 : n), 0);
+    if (score > best) {
+      best = score;
+      category = c.key;
+    }
+  }
+  let priority: Classification["priority"] = "media";
+  if (v.highWords.some((w) => text.includes(w))) priority = "alta";
+  else if (v.lowWords.some((w) => text.includes(w))) priority = "baja";
+  return { category, priority };
+}
 
-// ─── Clasificación con IA (Gemini) + doble verificación, con fallback a palabras clave ──────
-import Groq from "groq-sdk";
-
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
-const CATEGORY_KEYS = CATEGORIES.map((c) => c.key).concat("general");
-
-async function askGemini(prompt: string): Promise<string | null> {
+// ─── Clasificación con IA (Groq) + doble verificación, con fallback a palabras clave ──
+async function askLlm(prompt: string): Promise<string | null> {
   if (!groq) return null;
   try {
     const completion = await groq.chat.completions.create({
@@ -75,27 +77,32 @@ async function askGemini(prompt: string): Promise<string | null> {
   }
 }
 
-export async function classifyIncidentAI(title: string, description: string): Promise<Classification> {
-  const fallback = classifyIncident(title, description);
+export async function classifyIncidentAI(
+  title: string,
+  description: string,
+  v: VerticalConfig = FINCAS
+): Promise<Classification> {
+  const fallback = classifyIncident(title, description, v);
+  const categoryKeys = v.categories.map((c) => c.key).concat("general");
 
-  const prompt1 = `Eres un clasificador de incidencias para una gestoría de comunidades de vecinos.
-Categorías válidas: ${CATEGORY_KEYS.join(", ")}.
+  const prompt1 = `Eres un clasificador de ${v.request.manyLower} para ${v.aiContext}.
+Categorías válidas: ${categoryKeys.join(", ")}.
 Prioridades válidas: baja, media, alta.
 
-Incidencia:
+${v.request.one}:
 Título: ${title}
 Descripción: ${description}
 
 Responde SOLO en este formato exacto, sin explicaciones: categoria|prioridad`;
 
-  const first = await askGemini(prompt1);
+  const first = await askLlm(prompt1);
   if (!first) return fallback;
 
   const [cat1, pri1] = first.split("|").map((s) => s.trim().toLowerCase());
 
   // Segunda pasada: verificación
-  const prompt2 = `Revisa esta clasificación de una incidencia de comunidad de vecinos y corrígela si está mal.
-Categorías válidas: ${CATEGORY_KEYS.join(", ")}.
+  const prompt2 = `Revisa esta clasificación de ${v.aiContext} y corrígela si está mal.
+Categorías válidas: ${categoryKeys.join(", ")}.
 Prioridades válidas: baja, media, alta.
 
 Título: ${title}
@@ -104,47 +111,49 @@ Clasificación propuesta: categoría=${cat1}, prioridad=${pri1}
 
 Responde SOLO en este formato exacto, sin explicaciones: categoria|prioridad`;
 
-  const second = await askGemini(prompt2);
+  const second = await askLlm(prompt2);
   if (!second) {
-    const category = CATEGORY_KEYS.includes(cat1) ? cat1 : fallback.category;
+    const category = categoryKeys.includes(cat1) ? cat1 : fallback.category;
     const priority = ["baja", "media", "alta"].includes(pri1) ? (pri1 as Classification["priority"]) : fallback.priority;
     return { category, priority };
   }
 
   const [cat2, pri2] = second.split("|").map((s) => s.trim().toLowerCase());
-  const category = CATEGORY_KEYS.includes(cat2) ? cat2 : (CATEGORY_KEYS.includes(cat1) ? cat1 : fallback.category);
+  const category = categoryKeys.includes(cat2) ? cat2 : categoryKeys.includes(cat1) ? cat1 : fallback.category;
   const priority = ["baja", "media", "alta"].includes(pri2)
     ? (pri2 as Classification["priority"])
-    : (["baja", "media", "alta"].includes(pri1) ? (pri1 as Classification["priority"]) : fallback.priority);
+    : ["baja", "media", "alta"].includes(pri1)
+      ? (pri1 as Classification["priority"])
+      : fallback.priority;
 
   return { category, priority };
 }
 
-
-// ─── Selección de proveedor con IA ─────────────────────────────────────────────
+// ─── Selección de proveedor con IA (compartida por ambas verticales) ───────────
 export async function pickProviderAI(
   category: string,
   title: string,
   description: string,
-  candidates: Array<{ id: number; name: string; notes: string | null }>
+  candidates: Array<{ id: number; name: string; notes: string | null }>,
+  v: VerticalConfig = FINCAS
 ): Promise<number | null> {
   if (candidates.length === 0) return null;
   if (candidates.length === 1) return candidates[0].id;
   if (!groq) return null;
 
   const list = candidates.map((c) => `id=${c.id} · ${c.name}${c.notes ? ` (${c.notes})` : ""}`).join("\n");
-  const prompt = `Eres un asistente de una gestoría de comunidades. Elige el proveedor más adecuado para esta incidencia de categoría "${category}".
+  const prompt = `Eres un asistente de ${v.aiContext}. Elige el ${v.provider.oneLower} más adecuado para esta ${v.request.oneLower} de categoría "${category}".
 
-Incidencia:
+${v.request.one}:
 Título: ${title}
 Descripción: ${description}
 
-Proveedores disponibles:
+${v.provider.many} disponibles:
 ${list}
 
-Responde SOLO con el id numérico del proveedor elegido, sin nada más.`;
+Responde SOLO con el id numérico del ${v.provider.oneLower} elegido, sin nada más.`;
 
-  const text = await askGemini(prompt);
+  const text = await askLlm(prompt);
   if (!text) return null;
   const id = Number(text.replace(/\D/g, ""));
   return candidates.some((c) => c.id === id) ? id : null;

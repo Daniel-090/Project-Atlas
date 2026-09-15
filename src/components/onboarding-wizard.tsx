@@ -5,6 +5,7 @@ import { useActionState, useMemo, useState } from "react";
 import { finishOnboarding } from "@/app/actions/panel";
 import type { ActionState } from "@/app/actions/auth";
 import { buildThemeVars, themeVarsToStyle } from "@/lib/theme";
+import { getVertical, type VerticalKey } from "@/verticals";
 import { Field, Notice, SubmitButton } from "@/components/ui";
 
 const PRESETS = [
@@ -15,7 +16,8 @@ const PRESETS = [
   { name: "Grafito", primary: "#f59e0b", secondary: "#e5e7eb", background: "#111111", theme: "dark" },
 ];
 
-export function ThemePreview({ primary, secondary, background, theme, name, logoUrl }: { primary: string; secondary: string; background: string; theme: string; name: string; logoUrl?: string }) {
+export function ThemePreview({ primary, secondary, background, theme, name, logoUrl, vertical = "fincas" }: { primary: string; secondary: string; background: string; theme: string; name: string; logoUrl?: string; vertical?: VerticalKey }) {
+  const v = getVertical(vertical);
   const vars = useMemo(() => buildThemeVars({ primaryColor: primary, secondaryColor: secondary, backgroundColor: background, theme }), [primary, secondary, background, theme]);
   return (
     <div className="overflow-hidden rounded-2xl border border-border" style={themeVarsToStyle(vars)}>
@@ -29,26 +31,26 @@ export function ThemePreview({ primary, secondary, background, theme, name, logo
                 {name.slice(0, 1).toUpperCase() || "A"}
               </span>
             )}
-            <span className="truncate text-[10px] font-semibold">{name || "Tu gestoría"}</span>
+            <span className="truncate text-[10px] font-semibold">{name || `Tu ${v.company.oneLower}`}</span>
           </div>
           <div className="mt-3 grid gap-1 text-[10px]">
-            {["Resumen", "Incidencias", "Comunidades"].map((l, i) => (
-              <div key={l} className="rounded-md px-2 py-1" style={i === 0 ? { background: "var(--atlas-primary-soft)" } : { color: "var(--atlas-text-secondary)" }}>
-                {l}
+            {v.nav.slice(0, 3).map((item, i) => (
+              <div key={item.href} className="rounded-md px-2 py-1" style={i === 0 ? { background: "var(--atlas-primary-soft)" } : { color: "var(--atlas-text-secondary)" }}>
+                {item.label}
               </div>
             ))}
           </div>
         </div>
         <div className="flex-1 p-4">
           <p className="text-[9px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--atlas-primary)" }}>
-            Resumen
+            {v.nav[0]?.label ?? "Resumen"}
           </p>
-          <p className="text-sm font-semibold">Hola, gestor</p>
+          <p className="text-sm font-semibold">Hola, {v.key === "inmobiliarias" ? "agente" : "gestor"}</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            {["Incidencias", "Comunidades"].map((l) => (
-              <div key={l} className="rounded-lg p-2" style={{ background: "var(--atlas-surface)", border: "1px solid var(--atlas-border)" }}>
+            {v.nav.slice(1, 3).map((item) => (
+              <div key={item.href} className="rounded-lg p-2" style={{ background: "var(--atlas-surface)", border: "1px solid var(--atlas-border)" }}>
                 <p className="text-[9px]" style={{ color: "var(--atlas-text-secondary)" }}>
-                  {l}
+                  {item.label}
                 </p>
                 <p className="text-base font-semibold">12</p>
               </div>
@@ -63,7 +65,8 @@ export function ThemePreview({ primary, secondary, background, theme, name, logo
   );
 }
 
-export function OnboardingWizard({ companyName }: { companyName: string }) {
+export function OnboardingWizard({ companyName, vertical = "fincas" }: { companyName: string; vertical?: VerticalKey }) {
+  const v = getVertical(vertical);
   const [step, setStep] = useState(0);
   const [primary, setPrimary] = useState(PRESETS[0].primary);
   const [secondary, setSecondary] = useState(PRESETS[0].secondary);
@@ -141,7 +144,7 @@ export function OnboardingWizard({ companyName }: { companyName: string }) {
           </div>
           <div>
             <span className="atlas-label">Vista previa en vivo</span>
-            <ThemePreview primary={primary} secondary={secondary} background={background} theme={theme} name={companyName} logoUrl={logoUrl} />
+            <ThemePreview primary={primary} secondary={secondary} background={background} theme={theme} name={companyName} logoUrl={logoUrl} vertical={v.key} />
           </div>
         </div>
       ) : null}
@@ -153,14 +156,14 @@ export function OnboardingWizard({ companyName }: { companyName: string }) {
           </Field>
           <div>
             <span className="atlas-label">Vista previa</span>
-            <ThemePreview primary={primary} secondary={secondary} background={background} theme={theme} name={companyName} logoUrl={logoUrl || undefined} />
+            <ThemePreview primary={primary} secondary={secondary} background={background} theme={theme} name={companyName} logoUrl={logoUrl || undefined} vertical={v.key} />
           </div>
         </div>
       ) : null}
 
       {step === 2 ? (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="WhatsApp de atención" hint="Uno por línea. Los verán tus vecinos en su portal.">
+          <Field label="WhatsApp de atención" hint="Uno por línea. Los verán tus {v.contact.manyLower} en su portal.">
             <textarea value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} rows={4} className="atlas-input" placeholder={"+34 600 000 000\n+34 611 111 111"} />
           </Field>
           <Field label="Emails de contacto" hint="Uno por línea.">

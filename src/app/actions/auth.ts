@@ -7,6 +7,7 @@ import { communities, companies, residents, users } from "@/db/schema";
 import { generateCode, generateSecret } from "@/lib/codes";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { createSession, destroySession } from "@/lib/session";
+import { DEFAULT_VERTICAL, isVerticalKey } from "@/verticals";
 
 export type ActionState = { error?: string } | undefined;
 
@@ -15,6 +16,8 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 export async function registerGestor(_prev: ActionState, fd: FormData): Promise<ActionState> {
   const name = str(fd, "name");
   const companyName = str(fd, "company");
+  const verticalRaw = str(fd, "vertical");
+  const vertical = isVerticalKey(verticalRaw) ? verticalRaw : DEFAULT_VERTICAL;
   const email = str(fd, "email").toLowerCase();
   const phone = str(fd, "phone");
   const password = str(fd, "password");
@@ -26,7 +29,7 @@ export async function registerGestor(_prev: ActionState, fd: FormData): Promise<
 
   const [company] = await db
     .insert(companies)
-    .values({ name: companyName, code: generateCode("ATL"), phone: phone || null, whatsappSecret: generateSecret() })
+    .values({ name: companyName, code: generateCode("ATL"), phone: phone || null, whatsappSecret: generateSecret(), vertical })
     .returning({ id: companies.id });
   const [user] = await db
     .insert(users)
@@ -63,7 +66,7 @@ export async function registerResident(_prev: ActionState, fd: FormData): Promis
     return { error: "Rellena todos los campos. La contraseña debe tener al menos 6 caracteres." };
   }
   const [community] = await db.select().from(communities).where(eq(communities.accessCode, code)).limit(1);
-  if (!community) return { error: "Código de comunidad no válido. Pídeselo a tu gestoría (formato RES-XXXXXXXX)." };
+  if (!community) return { error: "Código no válido. Pídeselo a tu empresa gestora (formato RES-XXXXXXXX)." };
   const exists = await db.select({ id: residents.id }).from(residents).where(eq(residents.email, email)).limit(1);
   if (exists.length) return { error: "Ya existe un vecino con ese email. Inicia sesión." };
   const [r] = await db
@@ -75,6 +78,7 @@ export async function registerResident(_prev: ActionState, fd: FormData): Promis
       email,
       phone: phone || null,
       unit: unit || null,
+      role: str(fd, "role") || "propietario",
       passwordHash: hashPassword(password),
     })
     .returning({ id: residents.id });

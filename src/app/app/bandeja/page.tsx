@@ -7,6 +7,7 @@ import { syncCompanyMail } from "@/lib/mail-sync";
 import { toggleRead } from "@/app/actions/panel";
 import { ChannelChip, PageHeader, formatDate } from "@/components/page-header";
 import { LogMessageForm } from "@/components/panel-forms";
+import { getVertical } from "@/verticals";
 
 const FILTERS = [
   { key: "todas", label: "Todas" },
@@ -18,6 +19,7 @@ const FILTERS = [
 
 export default async function BandejaPage({ searchParams }: { searchParams: Promise<{ filtro?: string; registrar?: string }> }) {
   const { company } = await requireGestor();
+  const v = getVertical(company.vertical);
   const { filtro = "todas", registrar } = await searchParams;
 
   // Sincronización silenciosa al abrir la bandeja (si hay IMAP y hace > 2 min)
@@ -47,7 +49,7 @@ export default async function BandejaPage({ searchParams }: { searchParams: Prom
       <PageHeader
         eyebrow="Bandeja"
         title="Centro de comunicaciones"
-        subtitle="Email, WhatsApp y llamadas de tus comunidades en un solo hilo."
+        subtitle={`Email, WhatsApp y llamadas de tus ${v.entity.manyLower} en un solo hilo.`}
         actions={
           <Link href={registrar ? "/app/bandeja" : "/app/bandeja?registrar=1"} className={`atlas-btn ${registrar ? "atlas-btn-secondary" : "atlas-btn-primary"}`}>
             {registrar ? "Cerrar" : "Registrar conversación"}
@@ -59,7 +61,7 @@ export default async function BandejaPage({ searchParams }: { searchParams: Prom
         <section className="atlas-card atlas-card-pad mb-6">
           <p className="atlas-eyebrow">Registro manual</p>
           <h2 className="mt-1 mb-5 text-lg font-semibold text-foreground">Anotar una llamada o mensaje</h2>
-          <LogMessageForm communities={comms} />
+          <LogMessageForm communities={comms} vertical={v.key} />
         </section>
       ) : null}
 

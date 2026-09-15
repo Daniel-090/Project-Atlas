@@ -7,9 +7,11 @@ import { ContactsForm, CustomizationForm, ImapForm, TeamForm } from "@/component
 import { removeTeamUser } from "@/app/actions/panel";
 import { users } from "@/db/schema";
 import { ThemePreview } from "@/components/onboarding-wizard";
+import { getVertical } from "@/verticals";
 
 export default async function ConfiguracionPage() {
   const { company, user } = await requireGestor();
+  const v = getVertical(company.vertical);
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "atlasapp.es";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
@@ -18,12 +20,13 @@ export default async function ConfiguracionPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Configuración" title="Tu gestoría" subtitle="Identidad visual, contactos, correo y códigos. Todo se guarda en Atlas y se aplica a tu panel y al portal de tus vecinos." />
+      <PageHeader eyebrow="Configuración" title={`Tu ${v.company.oneLower}`} subtitle={`Identidad visual, contactos, correo y códigos. Todo se guarda en Atlas y se aplica a tu panel y al portal de tus ${v.contact.manyLower}.`} />
 
       <div className="grid gap-5 sm:gap-6">
-        <Section id="identidad" eyebrow="Identidad" title="Personalización" description="Los colores se aplican solo dentro de tu panel y del portal de tus vecinos. La portada de Atlas mantiene su identidad propia.">
+        <Section id="identidad" eyebrow="Identidad" title="Personalización" description={`Los colores se aplican solo dentro de tu panel y del portal de tus ${v.contact.manyLower}. La portada de Atlas mantiene su identidad propia.`}>
           <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <CustomizationForm
+              companyNoun={v.company.one}
               initial={{
                 companyName: company.name,
                 primaryColor: company.primaryColor,
@@ -35,16 +38,16 @@ export default async function ConfiguracionPage() {
             />
             <div>
               <span className="atlas-label">Así lo ven hoy tus usuarios</span>
-              <ThemePreview primary={company.primaryColor} secondary={company.secondaryColor} background={company.backgroundColor} theme={company.theme} name={company.name} logoUrl={company.logoUrl ?? undefined} />
+              <ThemePreview primary={company.primaryColor} secondary={company.secondaryColor} background={company.backgroundColor} theme={company.theme} name={company.name} logoUrl={company.logoUrl ?? undefined} vertical={v.key} />
             </div>
           </div>
         </Section>
 
-        <Section id="contactos" eyebrow="Contactos" title="Atención al vecino" description="Estos contactos aparecen en el portal del vecino como enlaces directos (WhatsApp y email).">
-          <ContactsForm initial={{ phone: company.phone ?? "", whatsapp: company.whatsappJson.join("\n"), emails: company.emailsJson.join("\n") }} />
+        <Section id="contactos" eyebrow="Contactos" title={`Atención al ${v.contact.oneLower}`} description={`Estos contactos aparecen en el portal de tus ${v.contact.manyLower} como enlaces directos (WhatsApp y email).`}>
+          <ContactsForm initial={{ phone: company.phone ?? "", whatsapp: company.whatsappJson.join("\n"), emails: company.emailsJson.join("\n") }} contactNoun={v.contact.many} />
         </Section>
 
-        <Section id="correo" eyebrow="Correo" title="Buzón IMAP" description="Conecta el buzón de la gestoría. Atlas importa los últimos mensajes, detecta la comunidad y etiqueta facturas automáticamente." comingSoon>
+        <Section id="correo" eyebrow="Correo" title="Buzón IMAP" description={`Conecta el buzón de tu ${v.company.oneLower}. Atlas importa los últimos mensajes, detecta el ${v.entity.oneLower} y etiqueta facturas automáticamente.`} comingSoon>
           <ImapForm
             initial={{
               host: company.imapHost ?? "",
@@ -70,11 +73,15 @@ export default async function ConfiguracionPage() {
           </div>
         </Section>
 
-        <Section id="codigos" eyebrow="Códigos" title="Identificadores" description="El código de gestoría identifica tu cuenta. Los códigos RES- de cada comunidad están en Comunidades.">
+        <Section id="codigos" eyebrow="Códigos" title="Identificadores" description={`El código de tu ${v.company.oneLower} identifica tu cuenta. Los códigos RES- de cada ${v.entity.oneLower} están en ${v.entity.many}.`}>
           <dl className="grid gap-4 text-sm sm:grid-cols-3 sm:gap-5">
             <div>
-              <dt className="atlas-label">Código de gestoría</dt>
+              <dt className="atlas-label">Código de {v.company.oneLower}</dt>
               <dd className="font-mono font-semibold text-primary">{company.code}</dd>
+            </div>
+            <div>
+              <dt className="atlas-label">Vertical</dt>
+              <dd className="font-semibold text-foreground">{v.name}</dd>
             </div>
             <div>
               <dt className="atlas-label">Administrador</dt>
@@ -87,7 +94,7 @@ export default async function ConfiguracionPage() {
           </dl>
         </Section>
 
-        <Section id="equipo" eyebrow="Equipo" title="Acceso de tu equipo" description="Añade compañeros de tu gestoría para que puedan entrar con su propio email y contraseña.">
+        <Section id="equipo" eyebrow="Equipo" title="Acceso de tu equipo" description={`Añade compañeros de tu ${v.company.oneLower} para que puedan entrar con su propio email y contraseña.`}>
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="grid gap-3">
               {teamUsers.map((u) => (
@@ -107,7 +114,7 @@ export default async function ConfiguracionPage() {
                 </div>
               ))}
             </div>
-            <TeamForm />
+            <TeamForm companyNoun={v.company.oneLower} />
           </div>
         </Section>
       </div>

@@ -2,37 +2,237 @@
 
 import { useActionState } from "react";
 import type { ActionState } from "@/app/actions/auth";
-import { addTeamUser, createCommunity, createIncidentAsGestor, createIncidentAsResident, logMessage, saveContacts, saveCustomization, saveImap } from "@/app/actions/panel";
-import { CATEGORY_OPTIONS } from "@/lib/incident-ai";
+import {
+  addTeamUser,
+  createCommunity,
+  createIncidentAsGestor,
+  createIncidentAsResident,
+  logMessage,
+  saveContacts,
+  saveCustomization,
+  saveImap,
+  updateProperty,
+} from "@/app/actions/panel";
+import { categoryOptions } from "@/lib/incident-ai";
 import { Field, Notice, SubmitButton } from "@/components/ui";
+import {
+  FINCAS,
+  LISTING_STATUSES,
+  OPERATION_TYPES,
+  PROPERTY_TYPES,
+  getVertical,
+  type VerticalKey,
+} from "@/verticals";
 
 type Option = { id: number; name: string };
 
-export function CommunityForm() {
+export function CommunityForm({ vertical = "fincas", agents = [] }: { vertical?: VerticalKey; agents?: Option[] }) {
   const [state, action] = useActionState<ActionState, FormData>(createCommunity, undefined);
+  const v = getVertical(vertical);
+  const portfolio = v.features.propertyAttributes;
+
   return (
     <form action={action} className="grid gap-4" key={state === undefined ? "init" : JSON.stringify(state)}>
-      <Field label="Nombre de la comunidad">
-        <input name="name" required className="atlas-input min-w-0 max-w-full" placeholder="C.P. Avenida del Mar 12" />
+      <Field label={portfolio ? "Referencia o nombre del inmueble" : "Nombre de la comunidad"}>
+        <input
+          name="name"
+          required
+          className="atlas-input min-w-0 max-w-full"
+          placeholder={portfolio ? "Piso · Calle Mayor 12, 3ºB" : "C.P. Avenida del Mar 12"}
+        />
       </Field>
       <Field label="Dirección">
         <input name="address" className="atlas-input min-w-0 max-w-full" placeholder="Av. del Mar 12, 29600 Marbella" />
       </Field>
+
+      {portfolio ? (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Tipo de inmueble">
+              <select name="propertyType" className="atlas-input min-w-0 max-w-full" defaultValue="">
+                <option value="">Sin especificar</option>
+                {PROPERTY_TYPES.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Operación">
+              <select name="operationType" className="atlas-input min-w-0 max-w-full" defaultValue="">
+                <option value="">Sin especificar</option>
+                {OPERATION_TYPES.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Estado en cartera">
+              <select name="listingStatus" className="atlas-input min-w-0 max-w-full" defaultValue="disponible">
+                {LISTING_STATUSES.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={v.key === "inmobiliarias" ? "Precio / renta (€)" : "Precio (€)"} hint="Solo números. En alquiler, indica la renta mensual.">
+              <input name="price" type="number" min={0} className="atlas-input min-w-0 max-w-full" placeholder="850" />
+            </Field>
+            <Field label="Superficie (m²)">
+              <input name="m2" type="number" min={0} className="atlas-input min-w-0 max-w-full" placeholder="85" />
+            </Field>
+            <Field label="Habitaciones">
+              <input name="rooms" type="number" min={0} className="atlas-input min-w-0 max-w-full" placeholder="3" />
+            </Field>
+            <Field label="Baños">
+              <input name="baths" type="number" min={0} className="atlas-input min-w-0 max-w-full" placeholder="2" />
+            </Field>
+            <Field label="Código de llaves">
+              <input name="keyCode" className="atlas-input min-w-0 max-w-full" placeholder="L-2341" />
+            </Field>
+          </div>
+          <Field label="Agente responsable">
+            <select name="agentUserId" className="atlas-input min-w-0 max-w-full" defaultValue="">
+              <option value="">Sin asignar</option>
+              {agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Notas internas">
+            <textarea name="notes" rows={3} className="atlas-input min-w-0 max-w-full" placeholder="Gastos de comunidad, estado del inmueble, acuerdos con el propietario…" />
+          </Field>
+        </>
+      ) : null}
+
       <Notice message={state?.error} />
-      <SubmitButton pendingText="Creando…">Crear comunidad</SubmitButton>
+      <SubmitButton pendingText="Creando…">
+        {portfolio ? "Añadir inmueble" : "Crear comunidad"}
+      </SubmitButton>
     </form>
   );
 }
 
-export function IncidentForm({ communities }: { communities: Option[] }) {
+export function PropertyForm({
+  initial,
+  agents = [],
+}: {
+  initial: {
+    id: number;
+    name: string;
+    address: string;
+    propertyType: string;
+    operationType: string;
+    listingStatus: string;
+    price: number;
+    m2: number;
+    rooms: number;
+    baths: number;
+    keyCode: string;
+    notes: string;
+    agentUserId: number;
+  };
+  agents?: Option[];
+}) {
+  const [state, action] = useActionState<ActionState, FormData>(updateProperty, undefined);
+  return (
+    <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2" key={state?.error ?? "form"}>
+      <input type="hidden" name="id" value={initial.id} />
+      <div className="sm:col-span-2">
+        <Field label="Nombre / referencia">
+          <input name="name" defaultValue={initial.name} required className="atlas-input min-w-0 max-w-full" />
+        </Field>
+      </div>
+      <div className="sm:col-span-2">
+        <Field label="Dirección">
+          <input name="address" defaultValue={initial.address} className="atlas-input min-w-0 max-w-full" />
+        </Field>
+      </div>
+      <Field label="Tipo">
+        <select name="propertyType" defaultValue={initial.propertyType} className="atlas-input min-w-0 max-w-full">
+          <option value="">Sin especificar</option>
+          {PROPERTY_TYPES.map((t) => (
+            <option key={t.key} value={t.key}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Operación">
+        <select name="operationType" defaultValue={initial.operationType} className="atlas-input min-w-0 max-w-full">
+          <option value="">Sin especificar</option>
+          {OPERATION_TYPES.map((t) => (
+            <option key={t.key} value={t.key}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Estado en cartera">
+        <select name="listingStatus" defaultValue={initial.listingStatus} className="atlas-input min-w-0 max-w-full">
+          {LISTING_STATUSES.map((t) => (
+            <option key={t.key} value={t.key}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Precio / renta (€)">
+        <input name="price" type="number" min={0} defaultValue={initial.price || ""} className="atlas-input min-w-0 max-w-full" />
+      </Field>
+      <Field label="Superficie (m²)">
+        <input name="m2" type="number" min={0} defaultValue={initial.m2 || ""} className="atlas-input min-w-0 max-w-full" />
+      </Field>
+      <Field label="Habitaciones">
+        <input name="rooms" type="number" min={0} defaultValue={initial.rooms || ""} className="atlas-input min-w-0 max-w-full" />
+      </Field>
+      <Field label="Baños">
+        <input name="baths" type="number" min={0} defaultValue={initial.baths || ""} className="atlas-input min-w-0 max-w-full" />
+      </Field>
+      <Field label="Código de llaves">
+        <input name="keyCode" defaultValue={initial.keyCode} className="atlas-input min-w-0 max-w-full" />
+      </Field>
+      <Field label="Agente responsable">
+        <select name="agentUserId" defaultValue={initial.agentUserId || ""} className="atlas-input min-w-0 max-w-full">
+          <option value="">Sin asignar</option>
+          {agents.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <div className="sm:col-span-2">
+        <Field label="Notas internas">
+          <textarea name="notes" rows={3} defaultValue={initial.notes} className="atlas-input min-w-0 max-w-full" />
+        </Field>
+      </div>
+      <div className="sm:col-span-2">
+        <Notice message={state?.error} />
+      </div>
+      <div className="sm:col-span-2 flex justify-end">
+        <SubmitButton pendingText="Guardando…">Guardar ficha</SubmitButton>
+      </div>
+    </form>
+  );
+}
+
+export function IncidentForm({ communities, vertical = "fincas" }: { communities: Option[]; vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(createIncidentAsGestor, undefined);
+  const v = getVertical(vertical);
+  const categories = categoryOptions(v);
+
   return (
     <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
-        <Field label="Comunidad">
+        <Field label={v.entity.one}>
           <select name="communityId" required className="atlas-input min-w-0 max-w-full" defaultValue="">
             <option value="" disabled>
-              Selecciona una comunidad
+              Selecciona {v.features.propertyAttributes ? "un inmueble" : "una comunidad"}
             </option>
             {communities.map((c) => (
               <option key={c.id} value={c.id}>
@@ -42,9 +242,29 @@ export function IncidentForm({ communities }: { communities: Option[] }) {
           </select>
         </Field>
       </div>
+
+      {v.features.requestKinds ? (
+        <div className="sm:col-span-2">
+          <Field label="Tipo">
+            <select name="kind" className="atlas-input min-w-0 max-w-full" defaultValue="incidencia">
+              {v.requestKinds.map((k) => (
+                <option key={k.key} value={k.key}>
+                  {k.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      ) : null}
+
       <div className="sm:col-span-2">
         <Field label="Título">
-          <input name="title" required className="atlas-input min-w-0 max-w-full" placeholder="Fuga de agua en el garaje" />
+          <input
+            name="title"
+            required
+            className="atlas-input min-w-0 max-w-full"
+            placeholder={v.features.propertyAttributes ? "Fuga de agua en el baño" : "Fuga de agua en el garaje"}
+          />
         </Field>
       </div>
       <div className="sm:col-span-2">
@@ -55,7 +275,7 @@ export function IncidentForm({ communities }: { communities: Option[] }) {
       <Field label="Categoría">
         <select name="category" className="atlas-input min-w-0 max-w-full" defaultValue="">
           <option value="">Automática</option>
-          {CATEGORY_OPTIONS.map((c) => (
+          {categories.map((c) => (
             <option key={c.key} value={c.key}>
               {c.label}
             </option>
@@ -71,7 +291,7 @@ export function IncidentForm({ communities }: { communities: Option[] }) {
         </select>
       </Field>
       <Field label="Quién avisa">
-        <input name="reporterName" className="atlas-input min-w-0 max-w-full" placeholder="Nombre del vecino" />
+        <input name="reporterName" className="atlas-input min-w-0 max-w-full" placeholder={v.features.contactRoles ? "Propietario, inquilino, interesado…" : "Nombre del vecino"} />
       </Field>
       <Field label="Contacto">
         <input name="reporterContact" className="atlas-input min-w-0 max-w-full" placeholder="Teléfono o email" />
@@ -80,32 +300,34 @@ export function IncidentForm({ communities }: { communities: Option[] }) {
         <Notice message={state?.error} />
       </div>
       <div className="sm:col-span-2 flex justify-end">
-        <SubmitButton pendingText="Registrando…">Registrar incidencia</SubmitButton>
+        <SubmitButton pendingText="Registrando…">{v.requestCta}</SubmitButton>
       </div>
     </form>
   );
 }
 
-export function ResidentIncidentForm() {
+export function ResidentIncidentForm({ vertical = "fincas" }: { vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(createIncidentAsResident, undefined);
+  const v = getVertical(vertical);
   return (
     <form action={action} className="grid gap-4">
       <Field label="¿Qué ocurre?">
-        <input name="title" required className="atlas-input min-w-0 max-w-full" placeholder="Ej. La luz del portal no funciona" />
+        <input name="title" required className="atlas-input min-w-0 max-w-full" placeholder={v.features.propertyAttributes ? "Ej. La caldera no enciende" : "Ej. La luz del portal no funciona"} />
       </Field>
       <Field label="Cuéntanos más" hint="Dónde está, desde cuándo y si es urgente.">
         <textarea name="description" required rows={5} className="atlas-input min-w-0 max-w-full" placeholder="Describe la incidencia con detalle." />
       </Field>
       <Notice message={state?.error} />
       <SubmitButton pendingText="Enviando…" className="atlas-btn atlas-btn-primary w-full !py-3">
-        Enviar incidencia a mi gestoría
+        Enviar a mi {v.company.oneLower}
       </SubmitButton>
     </form>
   );
 }
 
-export function LogMessageForm({ communities }: { communities: Option[] }) {
+export function LogMessageForm({ communities, vertical = "fincas" }: { communities: Option[]; vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(logMessage, undefined);
+  const v = getVertical(vertical);
   return (
     <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2" key={state && !state.error ? Date.now() : "form"}>
       <Field label="Canal">
@@ -124,7 +346,7 @@ export function LogMessageForm({ communities }: { communities: Option[] }) {
       <Field label="Remitente / contacto">
         <input name="sender" required className="atlas-input min-w-0 max-w-full" placeholder="María López · +34 600 000 000" />
       </Field>
-      <Field label="Comunidad">
+      <Field label={v.entity.one}>
         <select name="communityId" className="atlas-input min-w-0 max-w-full" defaultValue="">
           <option value="">Detectar automáticamente</option>
           {communities.map((c) => (
@@ -136,7 +358,7 @@ export function LogMessageForm({ communities }: { communities: Option[] }) {
       </Field>
       <div className="sm:col-span-2">
         <Field label="Asunto">
-          <input name="subject" required className="atlas-input min-w-0 max-w-full" placeholder="Consulta sobre la derrama del ascensor" />
+          <input name="subject" required className="atlas-input min-w-0 max-w-full" placeholder={v.features.propertyAttributes ? "Consulta sobre la renovación del contrato" : "Consulta sobre la derrama del ascensor"} />
         </Field>
       </div>
       <div className="sm:col-span-2">
@@ -145,7 +367,7 @@ export function LogMessageForm({ communities }: { communities: Option[] }) {
         </Field>
       </div>
       <label className="flex items-center gap-2 text-sm text-foreground">
-        <input type="checkbox" name="factura" className="h-4 w-4 accent-[var(--atlas-primary)]" /> Marcar como factura / documento para el vecino
+        <input type="checkbox" name="factura" className="h-4 w-4 accent-[var(--atlas-primary)]" /> Marcar como factura / documento para el {v.contact.oneLower}
       </label>
       <div className="sm:col-span-2">
         <Notice message={state?.error} />
@@ -157,12 +379,18 @@ export function LogMessageForm({ communities }: { communities: Option[] }) {
   );
 }
 
-export function CustomizationForm({ initial }: { initial: { companyName: string; primaryColor: string; secondaryColor: string; backgroundColor: string; theme: string; logoUrl: string } }) {
+export function CustomizationForm({
+  initial,
+  companyNoun = FINCAS.company.one,
+}: {
+  initial: { companyName: string; primaryColor: string; secondaryColor: string; backgroundColor: string; theme: string; logoUrl: string };
+  companyNoun?: string;
+}) {
   const [state, action] = useActionState<ActionState, FormData>(saveCustomization, undefined);
   return (
     <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
-        <Field label="Nombre de la gestoría">
+        <Field label={`Nombre de ${companyNoun === "Gestoría" ? "la gestoría" : "la empresa"}`}>
           <input name="companyName" defaultValue={initial.companyName} className="atlas-input min-w-0 max-w-full" />
         </Field>
       </div>
@@ -202,7 +430,7 @@ function ColorInput({ name, label, defaultValue }: { name: string; label: string
   );
 }
 
-export function ContactsForm({ initial }: { initial: { phone: string; whatsapp: string; emails: string } }) {
+export function ContactsForm({ initial, contactNoun = FINCAS.contact.many }: { initial: { phone: string; whatsapp: string; emails: string }; contactNoun?: string }) {
   const [state, action] = useActionState<ActionState, FormData>(saveContacts, undefined);
   return (
     <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2">
@@ -227,7 +455,7 @@ export function ContactsForm({ initial }: { initial: { phone: string; whatsapp: 
   );
 }
 
-export function TeamForm() {
+export function TeamForm({ companyNoun = FINCAS.company.oneLower }: { companyNoun?: string }) {
   const [state, action] = useActionState<ActionState, FormData>(addTeamUser, undefined);
   return (
     <form action={action} className="grid min-w-0 gap-4">

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getVertical, requestKindLabel, type VerticalKey } from "@/verticals";
 
 export function PageHeader({ eyebrow, title, subtitle, actions }: { eyebrow: string; title: string; subtitle?: string; actions?: ReactNode }) {
   return (
@@ -51,4 +52,15 @@ export function ChannelChip({ channel }: { channel: string }) {
 export function formatDate(d: Date | string | null | undefined) {
   if (!d) return "—";
   return new Intl.DateTimeFormat("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(d));
+}
+
+export function KindChip({ kind, vertical }: { kind: string; vertical: VerticalKey }) {
+  const v = getVertical(vertical);
+  const label = requestKindLabel(v, kind);
+  if (!label) return null;
+  return (
+    <span className="atlas-chip" style={{ background: "var(--atlas-secondary-soft)" }}>
+      {label}
+    </span>
+  );
 }
