@@ -17,7 +17,10 @@ const globalForDb = globalThis as typeof globalThis & {
  */
 function requiresSsl(url: string): boolean {
   if (/sslmode=require|ssl=true/i.test(url)) return true;
-  return /\.render\.com|\.render\.internal|rds\.amazonaws\.com|\.ondigitalocean\.com/i.test(url);
+  // Proveedores gestionados que exigen TLS (Render, Neon, Supabase, RDS…)
+  return /\.render\.com|\.render\.internal|neon\.tech|supabase\.(co|com)|rds\.amazonaws\.com|\.ondigitalocean\.com|aivencloud\.com|elephantsql\.com/i.test(
+    url
+  );
 }
 
 export const pool =
