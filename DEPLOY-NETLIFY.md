@@ -8,23 +8,16 @@ Puedes seguirla tú o pegársela a cualquier asistente.
 ## 0. Qué necesitas
 
 - Cuenta en **netlify.com** (gratis).
-- Cuenta en **neon.tech** (gratis) — es la base de datos PostgreSQL.
 - El repositorio `Daniel-090/Project-Atlas` y la rama `inmobiliarias-netlify`.
 
 ---
 
-## 1. Base de datos gratis en Neon (3 min)
+## 1. Base de datos aislada de Netlify
 
-1. Entra en **neon.tech** → crea cuenta → **New Project**.
-2. Project name: `atlas-inmobiliarias` · Region: **Frankfurt (AWS eu-central-1)** · Postgres **17**.
-3. En el panel del proyecto, copia la **Connection string** (la que indica *pooled connection*).
-4. Debe terminar en `?sslmode=require`. Si no lo trae, añádelo a mano.
-
-Guarda esa cadena; es tu `DATABASE_URL`. Ejemplo de formato:
-
-```
-postgresql://usuario:contraseña@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
-```
+Esta rama usa **Netlify Database**. Al primer despliegue Netlify aprovisiona un
+PostgreSQL exclusivo para el sitio y aplica automáticamente las migraciones de
+`netlify/database/migrations/`. No configures `DATABASE_URL`: hacerlo podría
+sobrescribir el aislamiento y conectar, por error, a la base de Vercel.
 
 ---
 
@@ -46,12 +39,11 @@ postgresql://usuario:contraseña@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmo
 
 | Clave | Valor |
 |---|---|
-| `DATABASE_URL` | la cadena de Neon (con `?sslmode=require`) |
 | `NODE_VERSION` | `22` |
 | `GROQ_API_KEY` | tu clave de Groq (clasificación con IA) |
 | `RESEND_API_KEY` | tu clave de Resend (opcional, puedes dejarlo vacío) |
 
-> Usa una base de datos **nueva y exclusiva** para este sitio. No copies la
+> La base de datos es **nueva y exclusiva** para este sitio. No copies la
 > `DATABASE_URL` de Vercel ni ejecutes estas migraciones en esa base.
 
 6. Pulsa **Deploy site** y espera unos 3-5 minutos.
@@ -61,30 +53,11 @@ postgresql://usuario:contraseña@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmo
 
 ---
 
-## 3. Crear las tablas (una sola vez)
+## 3. Crear las tablas
 
-Entra en tu proyecto de **Neon** → **SQL Editor** → pega este bloque y ejecútalo:
-
-```sql
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "property_type" varchar(20);
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "operation_type" varchar(20);
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "listing_status" varchar(20) DEFAULT 'disponible' NOT NULL;
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "price_cents" integer;
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "m2" integer;
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "rooms" integer;
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "baths" integer;
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "key_code" varchar(40);
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "notes" text;
-ALTER TABLE "communities" ADD COLUMN IF NOT EXISTS "agent_user_id" integer;
-ALTER TABLE "companies" ADD COLUMN IF NOT EXISTS "vertical" varchar(20) DEFAULT 'fincas' NOT NULL;
-ALTER TABLE "incidents"  ADD COLUMN IF NOT EXISTS "kind" varchar(20) DEFAULT 'incidencia' NOT NULL;
-ALTER TABLE "residents"  ADD COLUMN IF NOT EXISTS "role" varchar(20) DEFAULT 'propietario' NOT NULL;
-```
-
-> Nota: si la base de datos es **completamente nueva** (nunca has usado Atlas ahí),
-> estas sentencias `ALTER TABLE` fallarán porque las tablas no existen todavía.
-> En ese caso, ejecuta primero el contenido de `drizzle/0000_loud_zeigeist.sql`
-> y vuelve a ejecutar este bloque.
+No hay ningún paso manual. Netlify crea las tablas automáticamente antes de
+publicar el primer despliegue. Si una migración falla, el sitio no se publica y
+la base de Vercel no se ve afectada.
 
 ---
 

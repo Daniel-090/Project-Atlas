@@ -1,4 +1,5 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
+import { getConnectionString } from "@netlify/database";
 import { Pool } from "pg";
 
 /**
@@ -26,10 +27,12 @@ const globalForDb = globalThis as typeof globalThis & {
 export function getPool(): Pool {
   if (globalForDb.__atlasPool) return globalForDb.__atlasPool;
 
-  const databaseUrl = process.env.DATABASE_URL;
+  // En Netlify Database la URL se inyecta por sitio y por rama de despliegue.
+  // La prioridad de DATABASE_URL mantiene compatibles los entornos existentes.
+  const databaseUrl = process.env.DATABASE_URL ?? (process.env.NETLIFY === "true" ? getConnectionString() : undefined);
   if (!databaseUrl) {
     throw new Error(
-      "DATABASE_URL no configurada. Añádela en Render → tu servicio → Environment (formato: postgres://…?sslmode=require)."
+      "Base de datos no configurada. Define DATABASE_URL o despliega en Netlify con Netlify Database activada."
     );
   }
 
