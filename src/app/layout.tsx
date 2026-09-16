@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Atlas · Gestión de comunidades",
-  description: "Plataforma para gestorías: comunidades, vecinos, incidencias y comunicaciones en un solo lugar.",
+  title: "Atlas Inmobiliarias",
+  description: "Gestión de inmuebles, propietarios, inquilinos, solicitudes y comunicaciones.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -14,18 +14,18 @@ export default function HomePage() {
 
       <section className="flex flex-1 items-center justify-center px-6 pb-16">
         <div className="atlas-card w-full max-w-md p-8 text-center sm:p-10" style={{ boxShadow: "var(--atlas-shadow)" }}>
-          <p className="atlas-eyebrow">Administradores de fincas e inmobiliarias</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">Atlas</h1>
+          <p className="atlas-eyebrow">Software para inmobiliarias</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">Atlas Inmobiliarias</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Comunidades o inmuebles, propietarios e inquilinos, solicitudes y comunicaciones de tu empresa en un solo lugar.
+            Inmuebles, propietarios, inquilinos, solicitudes y comunicaciones de tu inmobiliaria en un solo lugar.
           </p>
 
           <div className="mt-8 grid gap-3">
             <Link href="/acceso" className="atlas-btn atlas-btn-primary w-full !py-3.5 text-base">
-              Entrar como administrador
+              Entrar a mi inmobiliaria
             </Link>
             <Link href="/vecino" className="atlas-btn atlas-btn-outline-primary w-full !py-3.5 text-base">
-              Crear incidencia · Acceso vecino
+              Acceso de propietario e inquilino
             </Link>
           </div>
 

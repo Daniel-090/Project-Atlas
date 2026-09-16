@@ -26,7 +26,7 @@ import {
 
 type Option = { id: number; name: string };
 
-export function CommunityForm({ vertical = "fincas", agents = [] }: { vertical?: VerticalKey; agents?: Option[] }) {
+export function CommunityForm({ vertical = "inmobiliarias", agents = [] }: { vertical?: VerticalKey; agents?: Option[] }) {
   const [state, action] = useActionState<ActionState, FormData>(createCommunity, undefined);
   const v = getVertical(vertical);
   const portfolio = v.features.propertyAttributes;
@@ -221,7 +221,7 @@ export function PropertyForm({
   );
 }
 
-export function IncidentForm({ communities, vertical = "fincas" }: { communities: Option[]; vertical?: VerticalKey }) {
+export function IncidentForm({ communities, vertical = "inmobiliarias" }: { communities: Option[]; vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(createIncidentAsGestor, undefined);
   const v = getVertical(vertical);
   const categories = categoryOptions(v);
@@ -306,7 +306,7 @@ export function IncidentForm({ communities, vertical = "fincas" }: { communities
   );
 }
 
-export function ResidentIncidentForm({ vertical = "fincas" }: { vertical?: VerticalKey }) {
+export function ResidentIncidentForm({ vertical = "inmobiliarias" }: { vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(createIncidentAsResident, undefined);
   const v = getVertical(vertical);
   return (
@@ -325,7 +325,7 @@ export function ResidentIncidentForm({ vertical = "fincas" }: { vertical?: Verti
   );
 }
 
-export function LogMessageForm({ communities, vertical = "fincas" }: { communities: Option[]; vertical?: VerticalKey }) {
+export function LogMessageForm({ communities, vertical = "inmobiliarias" }: { communities: Option[]; vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(logMessage, undefined);
   const v = getVertical(vertical);
   return (

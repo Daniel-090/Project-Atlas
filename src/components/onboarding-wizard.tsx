@@ -16,7 +16,7 @@ const PRESETS = [
   { name: "Grafito", primary: "#f59e0b", secondary: "#e5e7eb", background: "#111111", theme: "dark" },
 ];
 
-export function ThemePreview({ primary, secondary, background, theme, name, logoUrl, vertical = "fincas" }: { primary: string; secondary: string; background: string; theme: string; name: string; logoUrl?: string; vertical?: VerticalKey }) {
+export function ThemePreview({ primary, secondary, background, theme, name, logoUrl, vertical = "inmobiliarias" }: { primary: string; secondary: string; background: string; theme: string; name: string; logoUrl?: string; vertical?: VerticalKey }) {
   const v = getVertical(vertical);
   const vars = useMemo(() => buildThemeVars({ primaryColor: primary, secondaryColor: secondary, backgroundColor: background, theme }), [primary, secondary, background, theme]);
   return (
@@ -65,7 +65,7 @@ export function ThemePreview({ primary, secondary, background, theme, name, logo
   );
 }
 
-export function OnboardingWizard({ companyName, vertical = "fincas" }: { companyName: string; vertical?: VerticalKey }) {
+export function OnboardingWizard({ companyName, vertical = "inmobiliarias" }: { companyName: string; vertical?: VerticalKey }) {
   const v = getVertical(vertical);
   const [step, setStep] = useState(0);
   const [primary, setPrimary] = useState(PRESETS[0].primary);

@@ -22,7 +22,7 @@ export async function notifyHighPriority(opts: {
       html: `
         <p>Se ha registrado una incidencia de <strong>prioridad alta</strong>:</p>
         <p><strong>${opts.title}</strong><br/>Comunidad: ${opts.communityName}<br/>Referencia: ${opts.reference}</p>
-        <p><a href="https://atlas-wheat-xi.vercel.app/app/incidencias/${opts.incidentId}">Ver incidencia en Atlas</a></p>
+        <p><a href="${process.env.ATLAS_APP_URL ?? "https://atlas-inmobiliarias.netlify.app"}/app/incidencias/${opts.incidentId}">Ver solicitud en Atlas</a></p>
       `,
     });
   } catch (err) {

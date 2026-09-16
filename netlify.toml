@@ -15,6 +15,7 @@
     # nunca a la utilizada por el despliegue de Vercel.
     ATLAS_VERTICAL = "inmobiliarias"
     NEXT_PUBLIC_ATLAS_VERTICAL = "inmobiliarias"
+    ATLAS_APP_URL = "https://atlas-inmobiliarias.netlify.app"
 
 # Plugin oficial de Next.js para Netlify (OpenNext adapter).
 # Se instala como devDependency; si prefieres que Netlify lo gestione solo,

@@ -7,7 +7,7 @@ import { communities, companies, residents, users } from "@/db/schema";
 import { generateCode, generateSecret } from "@/lib/codes";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { createSession, destroySession } from "@/lib/session";
-import { DEFAULT_VERTICAL, isVerticalKey, type VerticalKey } from "@/verticals";
+import { INMOBILIARIAS, type VerticalKey } from "@/verticals";
 
 export type ActionState = { error?: string } | undefined;
 
@@ -18,10 +18,8 @@ const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
  * La comprobación vive en servidor: un formulario manipulado no puede crear
  * cuentas de otra vertical en el despliegue exclusivo de inmobiliarias.
  */
-function registrationVertical(submitted: string): VerticalKey {
-  const configured = process.env.ATLAS_VERTICAL;
-  if (isVerticalKey(configured)) return configured;
-  return isVerticalKey(submitted) ? submitted : DEFAULT_VERTICAL;
+function registrationVertical(_submitted: string): VerticalKey {
+  return INMOBILIARIAS.key;
 }
 
 export async function registerGestor(_prev: ActionState, fd: FormData): Promise<ActionState> {

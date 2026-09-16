@@ -28,7 +28,7 @@ export default async function VecinoPage({ searchParams }: { searchParams: Promi
       .limit(1);
     if (row) verticalKey = row.vertical;
   }
-  const v = getVertical(verticalKey);
+  const v = getVertical(verticalKey ?? "inmobiliarias");
   const hasCode = Boolean(code && verticalKey);
 
   return (

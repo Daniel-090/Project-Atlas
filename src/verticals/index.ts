@@ -21,8 +21,8 @@ export const VERTICALS: Record<VerticalKey, VerticalConfig> = {
   inmobiliarias: INMOBILIARIAS,
 };
 
-/** Vertical por defecto: el comportamiento actual de Atlas. */
-export const DEFAULT_VERTICAL: VerticalKey = "fincas";
+/** Esta edición de Atlas está dedicada exclusivamente a inmobiliarias. */
+export const DEFAULT_VERTICAL: VerticalKey = "inmobiliarias";
 
 export const VERTICAL_KEYS = Object.keys(VERTICALS) as VerticalKey[];
 

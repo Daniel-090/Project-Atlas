@@ -10,18 +10,18 @@ export default async function AccesoPage() {
   if (await getGestorSession()) redirect("/app");
   return (
     <PublicShell
-      eyebrow="Acceso gestoría"
-      title="Entrar como administrador"
-      subtitle="Accede al panel de tu gestoría."
+      eyebrow="Acceso inmobiliaria"
+      title="Entrar a tu inmobiliaria"
+      subtitle="Accede al panel de tu inmobiliaria."
       footer={
         <>
           ¿Aún no tienes cuenta?{" "}
           <Link href="/registro" className="font-semibold text-primary hover:underline">
-            Crear gestoría
+            Crear inmobiliaria
           </Link>
           <span className="mx-2">·</span>
           <Link href="/vecino" className="font-semibold text-primary hover:underline">
-            Soy vecino
+            Soy propietario o inquilino
           </Link>
         </>
       }
