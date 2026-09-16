@@ -10,6 +10,11 @@
 
   [build.environment]
     NODE_VERSION = "22"
+    # Esta rama se publica como producto independiente para inmobiliarias.
+    # DATABASE_URL se configura en Netlify y debe apuntar a una base NUEVA,
+    # nunca a la utilizada por el despliegue de Vercel.
+    ATLAS_VERTICAL = "inmobiliarias"
+    NEXT_PUBLIC_ATLAS_VERTICAL = "inmobiliarias"
 
 # Plugin oficial de Next.js para Netlify (OpenNext adapter).
 # Se instala como devDependency; si prefieres que Netlify lo gestione solo,

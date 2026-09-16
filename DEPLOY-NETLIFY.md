@@ -9,14 +9,14 @@ Puedes seguirla tú o pegársela a cualquier asistente.
 
 - Cuenta en **netlify.com** (gratis).
 - Cuenta en **neon.tech** (gratis) — es la base de datos PostgreSQL.
-- El repositorio `Daniel-090/Project-Atlas` con el código actualizado en la rama `main`.
+- El repositorio `Daniel-090/Project-Atlas` y la rama `inmobiliarias-netlify`.
 
 ---
 
 ## 1. Base de datos gratis en Neon (3 min)
 
 1. Entra en **neon.tech** → crea cuenta → **New Project**.
-2. Project name: `atlas` · Region: **Frankfurt (AWS eu-central-1)** · Postgres **17**.
+2. Project name: `atlas-inmobiliarias` · Region: **Frankfurt (AWS eu-central-1)** · Postgres **17**.
 3. En el panel del proyecto, copia la **Connection string** (la que indica *pooled connection*).
 4. Debe terminar en `?sslmode=require`. Si no lo trae, añádelo a mano.
 
@@ -37,7 +37,7 @@ postgresql://usuario:contraseña@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmo
 
 | Campo | Valor |
 |---|---|
-| Branch to deploy | `main` |
+| Branch to deploy | `inmobiliarias-netlify` |
 | Build command | `npm run build` |
 | Publish directory | `.next` |
 | Base directory | *(vacío)* |
@@ -50,6 +50,9 @@ postgresql://usuario:contraseña@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmo
 | `NODE_VERSION` | `22` |
 | `GROQ_API_KEY` | tu clave de Groq (clasificación con IA) |
 | `RESEND_API_KEY` | tu clave de Resend (opcional, puedes dejarlo vacío) |
+
+> Usa una base de datos **nueva y exclusiva** para este sitio. No copies la
+> `DATABASE_URL` de Vercel ni ejecutes estas migraciones en esa base.
 
 6. Pulsa **Deploy site** y espera unos 3-5 minutos.
 

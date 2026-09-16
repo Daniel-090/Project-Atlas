@@ -25,11 +25,17 @@ export function GestorLoginForm() {
 
 export function GestorRegisterForm() {
   const [state, action] = useActionState<ActionState, FormData>(registerGestor, undefined);
-  const [vertical, setVertical] = useState<VerticalKey>("fincas");
+  const fixedVertical = isVerticalKey(process.env.NEXT_PUBLIC_ATLAS_VERTICAL)
+    ? process.env.NEXT_PUBLIC_ATLAS_VERTICAL
+    : undefined;
+  const [vertical, setVertical] = useState<VerticalKey>(fixedVertical ?? "fincas");
   const v = getVertical(vertical);
 
   return (
     <form action={action} className="grid gap-4 sm:grid-cols-2">
+      {fixedVertical ? (
+        <input type="hidden" name="vertical" value={vertical} />
+      ) : (
       <div className="sm:col-span-2">
         <span className="atlas-label">¿Cuál es tu actividad?</span>
         <input type="hidden" name="vertical" value={vertical} />
@@ -62,6 +68,7 @@ export function GestorRegisterForm() {
           ))}
         </div>
       </div>
+      )}
 
       <Field label={`Nombre de tu ${v.company.oneLower}`}>
         <input name="company" required className="atlas-input" placeholder={vertical === "inmobiliarias" ? "Inmobiliaria Duero" : "Gestoría Alcántara"} />

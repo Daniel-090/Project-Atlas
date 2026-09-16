@@ -7,17 +7,28 @@ import { communities, companies, residents, users } from "@/db/schema";
 import { generateCode, generateSecret } from "@/lib/codes";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { createSession, destroySession } from "@/lib/session";
-import { DEFAULT_VERTICAL, isVerticalKey } from "@/verticals";
+import { DEFAULT_VERTICAL, isVerticalKey, type VerticalKey } from "@/verticals";
 
 export type ActionState = { error?: string } | undefined;
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 
+/**
+ * Las ramas de producto pueden fijar una vertical mediante ATLAS_VERTICAL.
+ * La comprobación vive en servidor: un formulario manipulado no puede crear
+ * cuentas de otra vertical en el despliegue exclusivo de inmobiliarias.
+ */
+function registrationVertical(submitted: string): VerticalKey {
+  const configured = process.env.ATLAS_VERTICAL;
+  if (isVerticalKey(configured)) return configured;
+  return isVerticalKey(submitted) ? submitted : DEFAULT_VERTICAL;
+}
+
 export async function registerGestor(_prev: ActionState, fd: FormData): Promise<ActionState> {
   const name = str(fd, "name");
   const companyName = str(fd, "company");
   const verticalRaw = str(fd, "vertical");
-  const vertical = isVerticalKey(verticalRaw) ? verticalRaw : DEFAULT_VERTICAL;
+  const vertical = registrationVertical(verticalRaw);
   const email = str(fd, "email").toLowerCase();
   const phone = str(fd, "phone");
   const password = str(fd, "password");
