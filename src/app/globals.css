@@ -28,8 +28,10 @@
 }
 
 [data-theme="light"] {
-  --atlas-primary: #b8912a;
-  --atlas-primary-hover: #a07d22;
+  /* Dorado oscurecido respecto al original (#b8912a) para pasar 4.5:1 de
+     contraste tanto en texto sobre blanco como en texto blanco sobre botón. */
+  --atlas-primary: #8a6a1f;
+  --atlas-primary-hover: #6f5518;
   --atlas-on-primary: #ffffff;
   --atlas-secondary: #b8912a;
   --atlas-on-secondary: #ffffff;

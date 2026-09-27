@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
 export function SubmitButton({
@@ -39,15 +39,30 @@ export function AtlasMark({ size = 40 }: { size?: number }) {
   );
 }
 
+/**
+ * El tema vive en el atributo `data-theme` del <html>, que fija un script inline
+ * antes de la hidratación. Lo leemos con `useSyncExternalStore` en lugar de
+ * copiarlo a estado dentro de un efecto: así no hay renders en cascada ni
+ * desajuste de hidratación.
+ */
+function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
+
+function readTheme(): "light" | "dark" {
+  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+}
+
+function readThemeOnServer(): "light" | "dark" {
+  return "dark";
+}
+
 export function PublicThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-  useEffect(() => {
-    const t = document.documentElement.getAttribute("data-theme");
-    if (t === "light" || t === "dark") setTheme(t);
-  }, []);
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, readThemeOnServer);
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
     try {
       localStorage.setItem("atlas-public-theme", next);

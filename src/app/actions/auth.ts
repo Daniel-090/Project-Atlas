@@ -21,8 +21,12 @@ export async function registerGestor(_prev: ActionState, fd: FormData): Promise<
   const email = str(fd, "email").toLowerCase();
   const phone = str(fd, "phone");
   const password = str(fd, "password");
+  const consent = fd.get("consent") === "on";
   if (!name || !companyName || !email || password.length < 6) {
     return { error: "Rellena todos los campos. La contraseña debe tener al menos 6 caracteres." };
+  }
+  if (!consent) {
+    return { error: "Debes aceptar la política de privacidad y los términos y condiciones para crear la cuenta." };
   }
   const exists = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
   if (exists.length) return { error: "Ya existe una cuenta con ese email." };
@@ -62,8 +66,12 @@ export async function registerResident(_prev: ActionState, fd: FormData): Promis
   const phone = str(fd, "phone");
   const unit = str(fd, "unit");
   const password = str(fd, "password");
+  const consent = fd.get("consent") === "on";
   if (!code || !name || !email || password.length < 6) {
     return { error: "Rellena todos los campos. La contraseña debe tener al menos 6 caracteres." };
+  }
+  if (!consent) {
+    return { error: "Debes aceptar la política de privacidad y los términos y condiciones para registrarte." };
   }
   const [community] = await db.select().from(communities).where(eq(communities.accessCode, code)).limit(1);
   if (!community) return { error: "Código no válido. Pídeselo a tu empresa gestora (formato RES-XXXXXXXX)." };

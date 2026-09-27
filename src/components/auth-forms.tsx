@@ -1,9 +1,35 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { loginGestor, loginResident, registerGestor, registerResident, type ActionState } from "@/app/actions/auth";
 import { Field, Notice, SubmitButton } from "@/components/ui";
 import { VERTICAL_OPTIONS, getVertical, isVerticalKey, type VerticalKey } from "@/verticals";
+
+function ConsentCheckbox() {
+  return (
+    <label className="flex items-start gap-2.5 text-xs text-muted">
+      <input
+        type="checkbox"
+        name="consent"
+        required
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ accentColor: "var(--atlas-primary)" }}
+      />
+      <span>
+        He leído y acepto la{" "}
+        <Link href="/privacidad" target="_blank" className="font-medium text-primary hover:underline">
+          política de privacidad
+        </Link>{" "}
+        y los{" "}
+        <Link href="/terminos" target="_blank" className="font-medium text-primary hover:underline">
+          términos y condiciones
+        </Link>{" "}
+        de Atlas.
+      </span>
+    </label>
+  );
+}
 
 export function GestorLoginForm() {
   const [state, action] = useActionState<ActionState, FormData>(loginGestor, undefined);
@@ -72,13 +98,16 @@ export function GestorRegisterForm() {
       <Field label="Email">
         <input name="email" type="email" required autoComplete="email" className="atlas-input" placeholder="tu@empresa.es" />
       </Field>
-      <Field label="Teléfono">
+      <Field label="Teléfono" hint="Opcional.">
         <input name="phone" type="tel" className="atlas-input" placeholder="+34 600 000 000" />
       </Field>
       <div className="sm:col-span-2">
         <Field label="Contraseña" hint="Mínimo 6 caracteres.">
           <input name="password" type="password" required minLength={6} autoComplete="new-password" className="atlas-input" placeholder="••••••••" />
         </Field>
+      </div>
+      <div className="sm:col-span-2">
+        <ConsentCheckbox />
       </div>
       <div className="sm:col-span-2">
         <Notice message={state?.error} />
@@ -141,13 +170,14 @@ export function ResidentRegisterForm({ code, vertical }: { code?: string; vertic
         <Field label="Email">
           <input name="email" type="email" required className="atlas-input" placeholder="tu@correo.es" />
         </Field>
-        <Field label="Teléfono">
+        <Field label="Teléfono" hint="Opcional.">
           <input name="phone" type="tel" className="atlas-input" placeholder="+34 600 000 000" />
         </Field>
       </div>
       <Field label="Contraseña">
         <input name="password" type="password" required minLength={6} className="atlas-input" placeholder="••••••••" />
       </Field>
+      <ConsentCheckbox />
       <Notice message={state?.error} />
       <SubmitButton pendingText="Registrando…" className="atlas-btn atlas-btn-primary w-full !py-3">
         {showRoles ? `Darme de alta en mi ${v.entity.oneLower}` : "Registrarme en mi comunidad"}
