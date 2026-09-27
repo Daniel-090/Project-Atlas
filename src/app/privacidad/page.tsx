@@ -16,8 +16,10 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="atlas-title !text-lg">1. Responsable del tratamiento</h2>
           <p className="mt-2">
-            TODO: pendiente de completar con el nombre legal, NIF/CIF y domicilio del titular de Atlas (ver página de{" "}
-            <Link href="/legal" className="underline">información legal</Link>).
+            Daniel <span className="atlas-code">TODO: apellidos o razón social, NIF/CIF y código postal/localidad</span>,
+            con domicilio en Avenida Zaragoza, 4 y email de contacto{" "}
+            <a href="mailto:atlasproyectnextmillioner@gmail.com" className="underline">atlasproyectnextmillioner@gmail.com</a>.
+            Ver <Link href="/legal" className="underline">información legal</Link> completa.
           </p>
         </section>
 
@@ -95,8 +97,9 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="atlas-title !text-lg">8. Tus derechos</h2>
           <p className="mt-2">
-            Puedes solicitar acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad de
-            tus datos escribiendo a TODO: email de contacto (ver <Link href="/legal" className="underline">información legal</Link>).
+            Puedes solicitar acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad
+            de tus datos escribiendo a{" "}
+            <a href="mailto:atlasproyectnextmillioner@gmail.com" className="underline">atlasproyectnextmillioner@gmail.com</a>.
             También tienes derecho a reclamar ante la Agencia Española de Protección de Datos (aepd.es).
           </p>
         </section>

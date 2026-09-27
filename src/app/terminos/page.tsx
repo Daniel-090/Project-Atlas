@@ -90,7 +90,8 @@ export default function TerminosPage() {
         <section>
           <h2 className="atlas-title !text-lg">10. Contacto</h2>
           <p className="mt-2">
-            TODO: email de contacto (ver <Link href="/legal" className="underline">información legal</Link>).
+            <a href="mailto:atlasproyectnextmillioner@gmail.com" className="underline">atlasproyectnextmillioner@gmail.com</a>.
+            Ver <Link href="/legal" className="underline">información legal</Link> completa.
           </p>
         </section>
       </div>

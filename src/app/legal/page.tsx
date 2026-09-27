@@ -17,15 +17,15 @@ export default function LegalPage() {
           <h2 className="atlas-title !text-lg">Titular del servicio</h2>
           <dl className="mt-3 grid gap-2 sm:grid-cols-[160px_1fr]">
             <dt className="text-muted">Nombre o razón social</dt>
-            <dd className="atlas-code">TODO: nombre legal completo (persona física o sociedad)</dd>
+            <dd>Daniel <span className="atlas-code">TODO: apellidos o razón social completa</span></dd>
             <dt className="text-muted">NIF / CIF</dt>
             <dd className="atlas-code">TODO: NIF o CIF</dd>
             <dt className="text-muted">Domicilio</dt>
-            <dd className="atlas-code">TODO: dirección completa</dd>
+            <dd>Avenida Zaragoza, 4 <span className="atlas-code">TODO: código postal y localidad</span></dd>
             <dt className="text-muted">Datos registrales</dt>
             <dd className="atlas-code">TODO: si aplica (p. ej. Registro Mercantil)</dd>
             <dt className="text-muted">Email de contacto</dt>
-            <dd className="atlas-code">TODO: email de contacto</dd>
+            <dd>atlasproyectnextmillioner@gmail.com</dd>
             <dt className="text-muted">Teléfono</dt>
             <dd className="atlas-code">TODO: teléfono (opcional pero recomendable)</dd>
           </dl>
