@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AtlasMark, PublicThemeToggle } from "@/components/ui";
+import { LegalFooter } from "@/components/legal-footer";
 
 export function PublicShell({
   eyebrow,
@@ -35,6 +36,7 @@ export function PublicShell({
           {footer ? <div className="mt-7 border-t border-border pt-5 text-center text-xs text-muted">{footer}</div> : null}
         </div>
       </section>
+      <LegalFooter />
     </main>
   );
 }

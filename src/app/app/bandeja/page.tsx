@@ -17,16 +17,19 @@ const FILTERS = [
   { key: "facturas", label: "Facturas" },
 ];
 
+async function maybeSyncMail(company: { imapHost: string | null; imapUser: string | null; imapPassword: string | null; imapLastSync: Date | string | null }) {
+  if (!(company.imapHost && company.imapUser && company.imapPassword)) return;
+  const last = company.imapLastSync ? new Date(company.imapLastSync).getTime() : 0;
+  if (Date.now() - last > 120_000) await syncCompanyMail(company as Parameters<typeof syncCompanyMail>[0]).catch(() => undefined);
+}
+
 export default async function BandejaPage({ searchParams }: { searchParams: Promise<{ filtro?: string; registrar?: string }> }) {
   const { company } = await requireGestor();
   const v = getVertical(company.vertical);
   const { filtro = "todas", registrar } = await searchParams;
 
   // Sincronización silenciosa al abrir la bandeja (si hay IMAP y hace > 2 min)
-  if (company.imapHost && company.imapUser && company.imapPassword) {
-    const last = company.imapLastSync ? new Date(company.imapLastSync).getTime() : 0;
-    if (Date.now() - last > 120_000) await syncCompanyMail(company).catch(() => undefined);
-  }
+  await maybeSyncMail(company);
 
   const conditions = [eq(messages.companyId, company.id)];
   if (filtro === "noleidas") conditions.push(eq(messages.isRead, false));

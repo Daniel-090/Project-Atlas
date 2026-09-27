@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { ActionState } from "@/app/actions/auth";
 import {
   addTeamUser,
@@ -328,8 +328,14 @@ export function ResidentIncidentForm({ vertical = "fincas" }: { vertical?: Verti
 export function LogMessageForm({ communities, vertical = "fincas" }: { communities: Option[]; vertical?: VerticalKey }) {
   const [state, action] = useActionState<ActionState, FormData>(logMessage, undefined);
   const v = getVertical(vertical);
+  const [prevState, setPrevState] = useState(state);
+  const [resetKey, setResetKey] = useState(0);
+  if (state !== prevState) {
+    setPrevState(state);
+    if (state && !state.error) setResetKey((k) => k + 1);
+  }
   return (
-    <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2" key={state && !state.error ? Date.now() : "form"}>
+    <form action={action} className="grid min-w-0 gap-4 sm:grid-cols-2" key={resetKey}>
       <Field label="Canal">
         <select name="channel" className="atlas-input min-w-0 max-w-full" defaultValue="llamada">
           <option value="llamada">Llamada</option>

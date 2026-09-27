@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AtlasMark, PublicThemeToggle } from "@/components/ui";
+import { LegalFooter } from "@/components/legal-footer";
 
 export default function HomePage() {
   return (
@@ -38,9 +39,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="px-6 pb-6 text-center text-[11px] tracking-wide text-muted">
-        © {new Date().getFullYear()} Atlas · atlasapp.es
-      </footer>
+      <LegalFooter />
     </main>
   );
 }
