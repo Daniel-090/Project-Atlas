@@ -17,7 +17,7 @@ export default function LegalPage() {
           <h2 className="atlas-title !text-lg">Titular del servicio</h2>
           <dl className="mt-3 grid gap-2 sm:grid-cols-[160px_1fr]">
             <dt className="text-muted">Nombre o razón social</dt>
-            <dd>Daniel <span className="atlas-code">TODO: apellidos o razón social completa</span></dd>
+            <dd>Daniel Navarro González</dd>
             <dt className="text-muted">NIF / CIF</dt>
             <dd>26309791E</dd>
             <dt className="text-muted">Domicilio</dt>
@@ -27,7 +27,7 @@ export default function LegalPage() {
             <dt className="text-muted">Email de contacto</dt>
             <dd>atlasproyectnextmillioner@gmail.com</dd>
             <dt className="text-muted">Teléfono</dt>
-            <dd className="atlas-code">TODO: teléfono (opcional pero recomendable)</dd>
+            <dd>623 434 719</dd>
           </dl>
         </section>
 
