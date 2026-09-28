@@ -6,29 +6,15 @@ export default function LegalPage() {
   return (
     <PublicShell eyebrow="Atlas" title="Información legal" wide>
       <div className="grid gap-5 text-sm leading-relaxed text-foreground">
-        <p className="atlas-alert">
-          <strong>Pendiente de completar por el titular de Atlas.</strong> Los datos de esta página son obligatorios
-          para cumplir con el deber de información del artículo 10 de la Ley 34/2002 (LSSI-CE), pero no pueden
-          inventarse. Sustituye cada TODO por el dato real antes de publicar esta página o de empezar a cobrar por el
-          servicio.
-        </p>
+        
 
         <section>
           <h2 className="atlas-title !text-lg">Titular del servicio</h2>
-          <dl className="mt-3 grid gap-2 sm:grid-cols-[160px_1fr]">
-            <dt className="text-muted">Nombre o razón social</dt>
-            <dd>Daniel Navarro González</dd>
-            <dt className="text-muted">NIF / CIF</dt>
-            <dd>26309791E</dd>
-            <dt className="text-muted">Domicilio</dt>
-            <dd>Avenida Zaragoza, 4, 50420 Cadrete (Zaragoza)</dd>
-            <dt className="text-muted">Datos registrales</dt>
-            <dd className="atlas-code">TODO: si aplica (p. ej. Registro Mercantil)</dd>
-            <dt className="text-muted">Email de contacto</dt>
-            <dd>atlasproyectnextmillioner@gmail.com</dd>
-            <dt className="text-muted">Teléfono</dt>
-            <dd>623 434 719</dd>
-          </dl>
+          {/* Datos del titular (nombre, NIF, domicilio, teléfono) retirados de la web pública a petición del titular.
+              Se facilitarán por email si alguien los solicita legítimamente. */}
+          <p className="mt-3">
+            Contacto: <a href="mailto:atlasproyectnextmillioner@gmail.com" className="underline">atlasproyectnextmillioner@gmail.com</a>
+          </p>
         </section>
 
         <section>

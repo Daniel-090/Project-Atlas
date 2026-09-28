@@ -16,8 +16,7 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="atlas-title !text-lg">1. Responsable del tratamiento</h2>
           <p className="mt-2">
-            Daniel Navarro González, NIF 26309791E,
-            con domicilio en Avenida Zaragoza, 4, 50420 Cadrete (Zaragoza) y email de contacto{" "}
+            El titular de Atlas, contactable en{" "}
             <a href="mailto:atlasproyectnextmillioner@gmail.com" className="underline">atlasproyectnextmillioner@gmail.com</a>.
             Ver <Link href="/legal" className="underline">información legal</Link> completa.
           </p>
