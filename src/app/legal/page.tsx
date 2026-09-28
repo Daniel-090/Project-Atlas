@@ -19,9 +19,9 @@ export default function LegalPage() {
             <dt className="text-muted">Nombre o razón social</dt>
             <dd>Daniel <span className="atlas-code">TODO: apellidos o razón social completa</span></dd>
             <dt className="text-muted">NIF / CIF</dt>
-            <dd className="atlas-code">TODO: NIF o CIF</dd>
+            <dd>26309791E</dd>
             <dt className="text-muted">Domicilio</dt>
-            <dd>Avenida Zaragoza, 4 <span className="atlas-code">TODO: código postal y localidad</span></dd>
+            <dd>Avenida Zaragoza, 4, 50420 Cadrete (Zaragoza)</dd>
             <dt className="text-muted">Datos registrales</dt>
             <dd className="atlas-code">TODO: si aplica (p. ej. Registro Mercantil)</dd>
             <dt className="text-muted">Email de contacto</dt>
